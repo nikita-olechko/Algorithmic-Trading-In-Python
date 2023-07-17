@@ -50,6 +50,16 @@ At the moment, the bot can only trade a fixed quantity of the asset. For example
 Orders do NOT stack. Meaning if your strategy places a BUY order, it will not place another BUY order unti a SELL order has been placed. This corresponds with the fixed quantity capacity of the current model.
 
 You can create a new strategy by writing similar functions that align with your trading approach. Of course, any data generated in the first function can and should be used in the second. Future updates will provide more functionality related to the type and quantity of orders placed.
+
+# Simulatenously Running Strategies
+
+To run several strategies simulatenously, you can instantiate new instances of the Bot class, which will run the strategy. I would recommend running them in a seaparate console if you wish to see live updates, otherwise it gets very confusing very fast. 
+
+If running multiple strategies, OR restarting strategies multiple times in one day:
+
+- the Bot class argument twsConnectionID must be a unique integer for each running instance of the bot
+- the Bot class argument orderStarterID should be passed the function get_starter_order_id(n) where n is an integer not passed to this function today
+
 # Backtesting
 
 To backtest strategies, use the complementary repository "Backtesting Trading Strategies". Note that although the two repos are directly complementary, "Backtesting Trading Strategies" is written in R, and has some minor tweaks in strategy function requirements.
