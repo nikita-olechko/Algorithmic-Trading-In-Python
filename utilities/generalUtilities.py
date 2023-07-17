@@ -38,5 +38,5 @@ def file_exists_in_folder(filename,
         return False
 
 
-def get_starter_orderId(n):
+def get_starter_order_id(n):
     return n*1000000
