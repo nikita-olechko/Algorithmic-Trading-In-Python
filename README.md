@@ -45,6 +45,10 @@ For example, in the testing strategy greaterthan60barsma.py, there are two funct
     This function defines the strategy's decision-making process. 
     It returns "BUY", "SELL", or "" (no action), based on whether the average price is above or below the 60-period SMA.
 
+At the moment, the bot can only trade a fixed quantity of the asset. For example, if you specify 100, and the ticker "AAPL", the bot will place orders for 100 shares of AAPL according to your strategy. In this example, it will BUY 100 shares if above the 60-period SMA, and SELL if below the 60-period SMA. 
+
+Orders do NOT stack. Meaning if your strategy places a BUY order, it will not place another BUY order unti a SELL order has been placed. This corresponds with the fixed quantity capacity of the current model.
+
 You can create a new strategy by writing similar functions that align with your trading approach. Of course, any data generated in the first function can and should be used in the second. Future updates will provide more functionality related to the type and quantity of orders placed.
 # Backtesting
 
