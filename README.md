@@ -45,7 +45,7 @@ For example, in the testing strategy greaterthan60barsma.py, there are two funct
     This function defines the strategy's decision-making process. 
     It returns "BUY", "SELL", or "" (no action), based on whether the average price is above or below the 60-period SMA.
 
-You can create a new strategy by writing similar functions that align with your trading approach. Future updates will provide more functionality related to the type and quantity of orders placed.
+You can create a new strategy by writing similar functions that align with your trading approach. Of course, any data generated in the first function can and should be used in the second. Future updates will provide more functionality related to the type and quantity of orders placed.
 # Backtesting
 
 To backtest strategies, use the complementary repository "Backtesting Trading Strategies". Note that although the two repos are directly complementary, "Backtesting Trading Strategies" is written in R, and has some minor tweaks in strategy function requirements.
