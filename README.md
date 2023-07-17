@@ -2,7 +2,7 @@
 
 This project contains a live trading bot that executes trades on the Interactive Brokers platform. The bot is designed to be highly customizable, allowing you to define your own trading strategies. As an example, the bot is currently set to use a testing strategy based on the 60-period Simple Moving Average (SMA). 
 
-***Please note that this strategy is for testing purposes only and not recommended for live trading. See Disclaimer Below.***
+***Please note that this strategy is for testing purposes only and not recommended for live trading. See Full Disclaimer Below.***
 
 # Features
 
@@ -54,7 +54,7 @@ I am looking into rebuilding the backtesting framework in Python.
 
 # Contact Me
 
-If you have any questions, suggestions, or want to discuss ideas about improving or extending the bot, feel free to reach out to me:
+If you have any questions, suggestions, or want to discuss ideas about improving or extending the program, feel free to reach out to me:
 
 - Email: nikita.olechko@gmail.com
 - LinkedIn: https://www.linkedin.com/in/nikitaolechko/
