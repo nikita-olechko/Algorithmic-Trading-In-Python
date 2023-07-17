@@ -1,6 +1,8 @@
 # Live-Algorithmic-Trading-In-Python
 
-This project contains a live trading bot that executes trades on the Interactive Brokers platform. The bot is designed to be highly customizable, allowing you to define your own trading strategies. As an example, the bot is currently set to use a testing strategy based on the 60-period Simple Moving Average (SMA). *Please note that this strategy is for testing purposes only and not recommended for live trading. See Disclaimer Below.*
+This project contains a live trading bot that executes trades on the Interactive Brokers platform. The bot is designed to be highly customizable, allowing you to define your own trading strategies. As an example, the bot is currently set to use a testing strategy based on the 60-period Simple Moving Average (SMA). 
+
+***Please note that this strategy is for testing purposes only and not recommended for live trading. See Disclaimer Below.***
 
 # Features
 
