@@ -14,6 +14,7 @@ import math
 from datetime import datetime
 import time
 
+from utilities.dataGenerationUtilities import average_bars_by_minute
 from utilities.generalUtilities import get_starter_order_id
 from liveTrading.liveTradingUtilities import create_stock_contract_object, marketBuyOrder, marketSellOrder, \
     holding_gross_return
@@ -25,13 +26,14 @@ sys.path.append(project_path)
 
 
 # TODO: Set up IBController to Run TWS Automatically (including Login and shutdown)
-# TODO: Split Github Repos into testing and live trading
-# TODO: Document trading returns (on EOD and on Keyboard interruption)
+# TODO: Document trading returns (on EOD and on Keyboard interruption OR on loop completion)
 # TODO: Research some new strategies
 # TODO: Implement some new strategies
 # TODO: Record a video to demo project outside of market hours for interviews
 # TODO: Take into account current position at start OR sell off positions at end for day trading,
 #  make customizable for strategy
+# TODO: Split Github Repos into testing and live trading [In Progress]
+# TODO: Transform data to have minute-by-minute analysis [Done]
 # TODO: Refactor Global variables to exist within classes so code is more modular [Done]
 # TODO: Trade multiple tickers/strategies at once [Done]
 # TODO: Code a sample strategy to test new system on [Done]
@@ -39,7 +41,7 @@ sys.path.append(project_path)
 # TODO: Change IBKR restart time to after market close [Done]
 
 
-# Class for interactive brokers connection
+# Class for interactive brokers connection within Bot
 class IBApi(EWrapper, EClient):
     def __init__(self, bot):
         EClient.__init__(self, self)
@@ -114,6 +116,7 @@ class Bot:
         data_columns = ["Date", "Open", "High", "Low", "Close", "Volume", "Average", "BarCount", "Orders",
                         "HoldingGrossReturn"]
         self.barDataFrame = pd.DataFrame(columns=data_columns)
+        self.minuteDataFrame = pd.DataFrame()
         # Get Bar Size
         self.barsize = "1 min"
         # Create IB Contract Object
@@ -215,7 +218,7 @@ class Bot:
 
     def place_orders_if_needed(self):
         """
-        A method to place orders based on the "Orders" column in the self.barDataFrame. This method is separate
+        A method to place orders based on the "Orders" column in self.barDataFrame. This method is separate
         from createOrderColumnLatestOrder to support advanced order routing in the future (e.g. conditional
         bracket orders).
         """
@@ -249,8 +252,12 @@ class Bot:
             minutes_diff = (bartime - self.initialbartime).total_seconds() / 60.0
             # On Bar Close, after a minute has passed
             if minutes_diff > 0 and math.floor(minutes_diff) % int(self.barsize.split()[0]) == 0:
+                self.minuteDataFrame = average_bars_by_minute(self.barDataFrame, self.minuteDataFrame)
                 if self.generateNewDataFunc is not None:
                     self.barDataFrame = self.generateNewDataFunc(self.barDataFrame)
+                if minutes_diff > 10:
+                    self.minuteDataFrame.to_csv("minuteDataFrame.csv", index=False)
+                    self.barDataFrame.to_csv("barDataFrame.csv", index=False)
                 self.createOrderColumnLatestOrder()
                 self.place_orders_if_needed()
 
@@ -258,5 +265,5 @@ class Bot:
 # Start Bot(s)
 bot1 = Bot(symbol="XOM", quantity=1, buySellConditionFunc=sampleSMABuySellStrategy,
            generateNewDataFunc=generate60PeriodSMA, twsConnectionID=1, orderIDStarter=get_starter_order_id(0))
-bot2 = Bot(symbol="XOM", quantity=2, buySellConditionFunc=sampleSMABuySellStrategy,
-           generateNewDataFunc=generate60PeriodSMA, twsConnectionID=2, orderIDStarter=get_starter_order_id(1))
+# bot2 = Bot(symbol="XOM", quantity=2, buySellConditionFunc=sampleSMABuySellStrategy,
+#            generateNewDataFunc=generate60PeriodSMA, twsConnectionID=2, orderIDStarter=get_starter_order_id(1))
