@@ -16,3 +16,4 @@ def sampleSMABuySellStrategy(barDataFrame):
         return "SELL"
     else:
         return ""
+

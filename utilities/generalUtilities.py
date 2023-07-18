@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from visualizations.__init__ import ROOT_DIRECTORY
+from utilities.__init__ import ROOT_DIRECTORY
 
 
 def retrieve_stored_historical_data(ticker, barsize="1 day", duration="1 Y"):
