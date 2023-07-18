@@ -58,7 +58,7 @@ To run several strategies simulatenously, you can instantiate new instances of t
 If running multiple strategies, OR restarting strategies multiple times in one day:
 
 - the Bot class argument twsConnectionID must be a unique integer for each running instance of the bot
-- the Bot class argument orderStarterID should be passed the function get_starter_order_id(n) where n is an integer not passed to this function today
+- the Bot class argument orderStarterID should be passed the function get_starter_order_id(n) where n is an integer not passed to this function today (order ids reset daily)
 
 # Backtesting
 
