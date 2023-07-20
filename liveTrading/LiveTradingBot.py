@@ -32,7 +32,10 @@ sys.path.append(project_path)
 # TODO: Record a video to demo project outside of market hours for interviews
 # TODO: Take into account current position at start OR sell off positions at end for day trading,
 #  make customizable for strategy
+# TODO: Write a readme for backtesting
 # TODO: Split Github Repos into testing and live trading [In Progress]
+# TODO: Create Summary statistics for backtesting [Done]
+# TODO: Write backtest data somewhere [Done]
 # TODO: Transform data to have minute-by-minute analysis [Done]
 # TODO: Refactor Global variables to exist within classes so code is more modular [Done]
 # TODO: Trade multiple tickers/strategies at once [Done]
@@ -220,21 +223,21 @@ class Bot:
         """
         A method to place orders based on the "Orders" column in self.barDataFrame. This method is separate
         from createOrderColumnLatestOrder to support advanced order routing in the future (e.g. conditional
-        bracket orders).
+        bracket orders). Any type of order can be added for future functionality (e.g., bracket and limit orders)
         """
         if self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] == "BUY":
-            with threading.Lock():
-                contract = create_stock_contract_object(self.symbol)
-                market_buy_order = marketBuyOrder(self.orderId, quantity=self.quantity)
-                self.place_orders(market_buy_order, contract)
-                self.last_order_index = len(self.barDataFrame) - 1
+            # with threading.Lock():
+            contract = create_stock_contract_object(self.symbol)
+            market_buy_order = marketBuyOrder(self.orderId, quantity=self.quantity)
+            self.place_orders(market_buy_order, contract)
+            self.last_order_index = len(self.barDataFrame) - 1
 
         if self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] == "SELL":
-            with threading.Lock():
-                contract = create_stock_contract_object(self.symbol)
-                market_sell_order = marketSellOrder(self.orderId, quantity=self.quantity)
-                self.place_orders(market_sell_order, contract)
-                self.last_order_index = len(self.barDataFrame) - 1
+            # with threading.Lock():
+            contract = create_stock_contract_object(self.symbol)
+            market_sell_order = marketSellOrder(self.orderId, quantity=self.quantity)
+            self.place_orders(market_sell_order, contract)
+            self.last_order_index = len(self.barDataFrame) - 1
 
     # Pass realtimebar data to our bot object
     def on_bar_update(self, reqId, bar, realtime):
@@ -255,10 +258,7 @@ class Bot:
                 self.minuteDataFrame = average_bars_by_minute(self.barDataFrame, self.minuteDataFrame)
                 if self.generateNewDataFunc is not None:
                     self.barDataFrame = self.generateNewDataFunc(self.barDataFrame)
-                if minutes_diff > 10:
-                    self.minuteDataFrame.to_csv("minuteDataFrame.csv", index=False)
-                    self.barDataFrame.to_csv("barDataFrame.csv", index=False)
-                self.createOrderColumnLatestOrder()
+                self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] = self.buySellConditionFunc(self.barDataFrame)
                 self.place_orders_if_needed()
 
 

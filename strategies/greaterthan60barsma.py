@@ -5,15 +5,21 @@ def generate60PeriodSMA(barDataFrame):
     return barDataFrame
 
 
-def sampleSMABuySellStrategy(barDataFrame):
+def sampleSMABuySellStrategy(barDataFrame, last_order_index):
     """
     A function that returns "BUY", "SELL" or "" depending on some condition, in
     this case Average > 60Period SMA, BUY, and vice versa
     """
     if barDataFrame.loc[barDataFrame.index[-1], 'Average'] < barDataFrame.loc[barDataFrame.index[-1], '60PeriodSMA']:
-        return "BUY"
-    elif barDataFrame.loc[barDataFrame.index[-1], 'Average'] > barDataFrame.loc[barDataFrame.index[-1], '60PeriodSMA']:
-        return "SELL"
+        if barDataFrame["Orders"][last_order_index] != "BUY":
+            return "BUY"
+        else:
+            return "HOLD"
+    elif barDataFrame.loc[barDataFrame.index[-1], 'Average'] >= barDataFrame.loc[barDataFrame.index[-1], '60PeriodSMA']:
+        if barDataFrame["Orders"][last_order_index] != "SELL":
+            return "SELL"
+        else:
+            return ""
     else:
         return ""
 
