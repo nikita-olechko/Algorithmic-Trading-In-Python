@@ -18,13 +18,13 @@ This project contains a live trading bot that executes trades on the Interactive
 - Python 3.6 or higher
 - Interactive Brokers account
 - IBKR Trader Workstation installed, open, and running on port 4000
-- Install necessary Python packages: ib_insync, pandas, pytz
+- Install necessary Python packages: see requirements.txt for complete list
 
 # Setup and Usage
 
 - Clone the repository to your local machine.
 - Install the necessary Python packages using pip:
-    pip install ib_insync pandas pytz
+    pip install pandas numpy matplotlib seaborn ibapi scikit-learn ta pytz APScheduler ib_insync
 
 Update the Bot instantiation at the bottom of LiveTradingBot.py to reflect your desired trading symbol, quantity, and strategy.
 Run the Python script:
@@ -47,7 +47,7 @@ For example, in the testing strategy greaterthan60barsma.py, there are two funct
 
 At the moment, the bot can only trade a fixed quantity of the asset. For example, if you specify 100, and the ticker "AAPL", the bot will place orders for 100 shares of AAPL according to your strategy. In this example, it will BUY 100 shares if above the 60-period SMA, and SELL if below the 60-period SMA. 
 
-Orders do NOT stack. Meaning if your strategy places a BUY order, it will not place another BUY order unti a SELL order has been placed. This corresponds with the fixed quantity capacity of the current model.
+Orders do NOT stack. Meaning if your strategy places a BUY order, it will not place another BUY order unti a SELL order has been placed, even if the BUY condition has been met. This corresponds with the fixed quantity capacity of the current model.
 
 You can create a new strategy by writing similar functions that align with your trading approach. Of course, any data generated in the first function can and should be used in the second. Future updates will provide more functionality related to the type and quantity of orders placed.
 
