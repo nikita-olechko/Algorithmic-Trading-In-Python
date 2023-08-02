@@ -1,8 +1,13 @@
 # A sample strategy to test the live trading bot's functionality. Only run on paper trading!
+from utilities.dataGenerationUtilities import modify_func_from_last_row_to_all_rows
+
 
 def generate60PeriodSMA(barDataFrame):
     barDataFrame.loc[barDataFrame.index[-1], '60PeriodSMA'] = barDataFrame['Average'].tail(60).mean()
     return barDataFrame
+
+
+generate60PeriodSMA_backtest = modify_func_from_last_row_to_all_rows(generate60PeriodSMA)
 
 
 def sampleSMABuySellStrategy(barDataFrame, last_order_index):
@@ -22,4 +27,3 @@ def sampleSMABuySellStrategy(barDataFrame, last_order_index):
             return ""
     else:
         return ""
-
