@@ -12,6 +12,5 @@ except:
 run_strategy_on_list_of_tickers(ib, '60PeriodSMA',
                                 strategy_buy_or_sell_condition_function=sampleSMABuySellStrategy,
                                 generate_additional_data_function=generate60PeriodSMA_backtest,
-                                barsize="1 Min", duration="1 D"
+                                barsize="1 Min", duration="1 D", list_of_tickers=['XOM', 'AAPL', 'MSFT', 'TSLA']
                                 )
-# list_of_tickers=['XOM', 'AAPL', 'MSFT', 'TSLA']

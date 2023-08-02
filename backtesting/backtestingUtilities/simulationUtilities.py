@@ -1,18 +1,14 @@
-import inspect
-import re
 import pandas as pd
 import os
 import gc
 from ib_insync import util, Contract
 
 
-# from backtesting.simulations import customOrders
-
-
 def run_strategy_on_list_of_tickers(ib, strategy, strategy_buy_or_sell_condition_function,
                                     generate_additional_data_function=None,
                                     barsize="1 day", duration="3 Y", what_to_show="TRADES", list_of_tickers=None,
-                                    strategy_period_offset=20, *args, **kwargs):
+                                    initializing_order=1,
+                                    *args, **kwargs):
     if list_of_tickers is None:
         list_of_tickers = pd.read_csv("../backtesting/nyse-listed.csv")['ACT Symbol']
     try:
@@ -39,52 +35,50 @@ def run_strategy_on_list_of_tickers(ib, strategy, strategy_buy_or_sell_condition
         if stk_data is not None:
             summary_df = simulate_trading_on_strategy(stk_data, ticker, strategy_buy_or_sell_condition_function,
                                                       generate_additional_data_function=generate_additional_data_function,
-                                                      barsize=barsize, duration=duration,
-                                                      strategy_period_offset=strategy_period_offset, *args, **kwargs)
+                                                      initializing_order=initializing_order,
+                                                      *args, **kwargs)
             all_tickers_summary = pd.concat([all_tickers_summary, summary_df])
             all_tickers_summary.to_csv(summary_file_path_name, index=False)
 
 
 def simulate_trading_on_strategy(stk_data, ticker, strategy_buy_or_sell_condition_function,
                                  generate_additional_data_function=None,
-                                 barsize="1 day", duration="1 Y", strategy_period_offset=20, *args, **kwargs):
+                                 initializing_order=1, *args, **kwargs):
     if generate_additional_data_function is not None:
-        for i in range(len(stk_data)):
-            stk_data.iloc[:i + 1] = generate_additional_data_function(stk_data.iloc[:i + 1], *args, **kwargs)
+        stk_data = generate_additional_data_function(stk_data)
 
     last_order_index = 0
 
-    # Remove NA values
-    stk_data = stk_data.dropna()
-
-    for index in range(strategy_period_offset, len(stk_data)):
+    for index, row in stk_data.iterrows():
+        if row.isna().any():
+            continue
         # Get order based on strategy conditions
-        order = strategy_buy_or_sell_condition_function(stk_data, ticker, index, last_order_index, *args, **kwargs)
+        order = strategy_buy_or_sell_condition_function(stk_data, ticker=ticker, current_index=index,
+                                                        last_order_index=last_order_index, *args, **kwargs)
 
         # If this is the first order, wait until first Buy order to establish the position
         if last_order_index == 0:
-            if order == 1:
+            if order == initializing_order:
                 stk_data.loc[index, 'Orders'] = 1
-                stk_data.loc[index, 'Position'] = - stk_data.loc[index, ticker]
+                stk_data.loc[index, 'Position'] = - stk_data.loc[index, "Average"]
                 last_order_index = index
         else:
-            stk_data, last_order_index = order_selector(order)(stk_data, index, last_order_index, ticker)
+            stk_data, last_order_index = order_selector(order)(stk_data, index, last_order_index)
 
-        # If the last order was a buy, sell the position
+        # If we are at the last order, and the last order was a buy, sell the position
         if index == len(stk_data) - 1 and stk_data.loc[last_order_index, 'Orders'] == 1:
             stk_data.loc[index, 'Orders'] = -1
             last_order_index = index
-            stk_data.loc[index, 'Position'] = stk_data.loc[index - 1, 'Position'] + stk_data.loc[index, ticker]
+            stk_data.loc[index, 'Position'] = stk_data.loc[index - 1, 'Position'] + stk_data.loc[index, "Average"]
 
     summary_df = create_summary_data(stk_data, ticker)
     return summary_df
 
 
 def create_summary_data(stk_data, ticker, summary_df=None):
-    ticker_wap = f"{ticker}.WAP"
-    stk_data['holdingGrossReturn'] = stk_data[ticker_wap] / stk_data[ticker_wap].iloc[0]
+    stk_data['holdingGrossReturn'] = stk_data["Average"] / stk_data["Average"].iloc[0]
 
-    trade_completed_indices = stk_data[stk_data['Orders'] == -1].index
+    trade_completed_indices = stk_data.loc[stk_data['Orders'] == -1].index
     final_position = stk_data['Position'].iloc[-1]
     average_position_post_trade = stk_data['Position'].loc[trade_completed_indices].mean()
     sd_position_post_trade = stk_data['Position'].loc[trade_completed_indices].std()
@@ -157,7 +151,7 @@ def get_stock_data(ib, ticker, barsize='1 min', duration='1 M', what_to_show='TR
     # If the data already exists, retrieve it
     if os.path.isfile(os.path.join(folder_path, file_name)):
         try:
-            stk_data = pd.read_csv(os.path.join(folder_path, file_name), parse_dates=True, index_col=0)
+            stk_data = pd.read_csv("../backtesting/data/Historical Data/" + file_name, parse_dates=True, index_col=0)
         except Exception as e:
             print("An error occurred:", str(e))
             stk_data = None
@@ -211,17 +205,17 @@ def order_selector(order):
     return order_dict[order]
 
 
-def buy_order(stk_data, index, last_order_index, ticker_wap):
+def buy_order(stk_data, index, last_order_index):
     stk_data.at[index, 'Orders'] = 1
     last_order_index = index
-    stk_data.at[index, 'Position'] = stk_data.at[index - 1, 'Position'] - stk_data.at[index, ticker_wap]
+    stk_data.at[index, 'Position'] = stk_data.at[index - 1, 'Position'] - stk_data.at[index, "Average"]
     return stk_data, last_order_index
 
 
-def sell_order(stk_data, index, last_order_index, ticker_wap):
+def sell_order(stk_data, index, last_order_index):
     stk_data.at[index, 'Orders'] = -1
     last_order_index = index
-    stk_data.at[index, 'Position'] = stk_data.at[index - 1, 'Position'] + stk_data.at[index, ticker_wap]
+    stk_data.at[index, 'Position'] = stk_data.at[index - 1, 'Position'] + stk_data.at[index, "Average"]
     return stk_data, last_order_index
 
 

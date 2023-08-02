@@ -170,7 +170,7 @@ class Bot:
         profitTargetOrder = Order()
         profitTargetOrder.orderId = self.orderId + 1
         profitTargetOrder.orderType = "LMT"
-        profitTargetOrder.action = "SELL"
+        profitTargetOrder.action = "-1"
         profitTargetOrder.totalQuantity = quantity
         profitTargetOrder.lmtPrice = round(profitTarget, 2)
         profitTargetOrder.transmit = True
@@ -180,7 +180,7 @@ class Bot:
         stopLossOrder = Order()
         stopLossOrder.orderId = self.orderId + 2
         stopLossOrder.orderType = "STP"
-        stopLossOrder.action = "SELL"
+        stopLossOrder.action = "-1"
         stopLossOrder.totalQuantity = quantity
         stopLossOrder.auxPrice = round(stopLoss, 2)
         stopLossOrder.transmit = True
@@ -210,12 +210,12 @@ class Bot:
         """
         A method to determine whether an order should be placed or not based on a conditional strategy function
         """
-        if self.barDataFrame["Orders"][self.last_order_index] != "BUY" and self.buySellConditionFunc(
-                self.barDataFrame) == "BUY":
-            self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] = "BUY"
-        elif self.barDataFrame["Orders"][self.last_order_index] != "SELL" and self.buySellConditionFunc(
-                self.barDataFrame) == "SELL":
-            self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] = "SELL"
+        if self.barDataFrame["Orders"][self.last_order_index] != 1 and self.buySellConditionFunc(
+                self.barDataFrame) == 1:
+            self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] = 1
+        elif self.barDataFrame["Orders"][self.last_order_index] != -1 and self.buySellConditionFunc(
+                self.barDataFrame) == -1:
+            self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] = -1
         else:
             pass
 
@@ -225,14 +225,14 @@ class Bot:
         from createOrderColumnLatestOrder to support advanced order routing in the future (e.g. conditional
         bracket orders). Any type of order can be added for future functionality (e.g., bracket and limit orders)
         """
-        if self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] == "BUY":
+        if self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] == 1:
             # with threading.Lock():
             contract = create_stock_contract_object(self.symbol)
             market_buy_order = marketBuyOrder(self.orderId, quantity=self.quantity)
             self.place_orders(market_buy_order, contract)
             self.last_order_index = len(self.barDataFrame) - 1
 
-        if self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] == "SELL":
+        if self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] == -1:
             # with threading.Lock():
             contract = create_stock_contract_object(self.symbol)
             market_sell_order = marketSellOrder(self.orderId, quantity=self.quantity)
