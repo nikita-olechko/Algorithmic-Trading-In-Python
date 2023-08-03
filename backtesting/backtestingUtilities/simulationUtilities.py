@@ -14,7 +14,7 @@ def run_strategy_on_list_of_tickers(ib, strategy, strategy_buy_or_sell_condition
     try:
         erred_tickers = pd.read_csv("../backtesting/data/ErroredTickers/nyse-listed.csv", header=False,
                                     names=['Ticker'])
-    except:
+    except FileNotFoundError:
         erred_tickers = pd.DataFrame(columns=['Ticker'])
     folder_path = os.path.join(os.getcwd(), "../backtesting/data", "Strategy Results")
     summary_file_path_name = os.path.join(folder_path,
@@ -216,6 +216,9 @@ def create_historical_data_file_name(ticker, barsize, duration):
 
 
 def order_selector(order):
+    """
+    A function to select the correct order function based on the order
+    """
     order = str(order)
     order_dict = {
         "1": buy_order,
