@@ -170,7 +170,7 @@ class Bot:
         profitTargetOrder = Order()
         profitTargetOrder.orderId = self.orderId + 1
         profitTargetOrder.orderType = "LMT"
-        profitTargetOrder.action = "-1"
+        profitTargetOrder.action = "SELL"
         profitTargetOrder.totalQuantity = quantity
         profitTargetOrder.lmtPrice = round(profitTarget, 2)
         profitTargetOrder.transmit = True
@@ -180,7 +180,7 @@ class Bot:
         stopLossOrder = Order()
         stopLossOrder.orderId = self.orderId + 2
         stopLossOrder.orderType = "STP"
-        stopLossOrder.action = "-1"
+        stopLossOrder.action = "SELL"
         stopLossOrder.totalQuantity = quantity
         stopLossOrder.auxPrice = round(stopLoss, 2)
         stopLossOrder.transmit = True
@@ -193,18 +193,17 @@ class Bot:
 
     def place_orders(self, order_bracket, contract, oca=False):
         # Place the Bracket Order
-        with threading.Lock():
-            if type(order_bracket) != list:
-                order_bracket = [order_bracket]
-            for order in order_bracket:
-                # One Cancels All
-                if oca:
-                    order.ocaGroup = "OCA_" + str(self.orderId)
-                self.ib.placeOrder(order.orderId, contract, order)
-            self.orderId = self.orderId + len(order_bracket)
-            print(
-                f"{len(order_bracket)} order(s) placed. Next order id: "
-                f"{self.orderId}. Order Details: \n{order_bracket}")
+        if type(order_bracket) != list:
+            order_bracket = [order_bracket]
+        for order in order_bracket:
+            # One Cancels All
+            if oca:
+                order.ocaGroup = "OCA_" + str(self.orderId)
+            self.ib.placeOrder(order.orderId, contract, order)
+        self.orderId = self.orderId + len(order_bracket)
+        print(
+            f"{len(order_bracket)} order(s) placed. Next order id: "
+            f"{self.orderId}. Order Details: \n{order_bracket}")
 
     def createOrderColumnLatestOrder(self):
         """
@@ -226,14 +225,12 @@ class Bot:
         bracket orders). Any type of order can be added for future functionality (e.g., bracket and limit orders)
         """
         if self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] == 1:
-            # with threading.Lock():
             contract = create_stock_contract_object(self.symbol)
             market_buy_order = marketBuyOrder(self.orderId, quantity=self.quantity)
             self.place_orders(market_buy_order, contract)
             self.last_order_index = len(self.barDataFrame) - 1
 
         if self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] == -1:
-            # with threading.Lock():
             contract = create_stock_contract_object(self.symbol)
             market_sell_order = marketSellOrder(self.orderId, quantity=self.quantity)
             self.place_orders(market_sell_order, contract)
