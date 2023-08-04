@@ -10,6 +10,7 @@ This project contains a live trading bot that executes trades on the Interactive
 - Supports customizable strategies
 - Built with a modular design for adding more order types and quantities
 - Supports limit and stop-loss orders as well as market orders
+- Supports customized backtesting on historical data
 - Can manage multiple trading bots running different strategies simultaneously (up to 30 trades per second per bot)
 - Sample testing strategy based on 60-period SMA
 
@@ -62,9 +63,35 @@ If running multiple strategies, OR restarting strategies multiple times in one d
 
 # Backtesting
 
-To backtest strategies, use the complementary repository "Backtesting Trading Strategies". Note that although the two repos are directly complementary, "Backtesting Trading Strategies" is written in R, and has some minor tweaks in strategy function requirements.
+Backtesting is now available in Python! Here are the steps to backtest a strategy:
 
-I am looking into rebuilding the backtesting framework in Python. 
+- Step 0: Create your strategy condition functions in the same way as you would for live trading. See the section above on Customizing Strategies for more details.
+- Step 1: Assuming you are generating new data, you MUST modify your data generation function to operate on the entire dataframe instead of only the last row. This is because the backtesting framework requires the entire dataframe to be generated at once. For example, if you are calculating the 60-period SMA, you must calculate the 60-period SMA for the entire dataframe, not just the last row. See the sample strategy greaterthan60barsma.py for an example of how to do this.
+- Step 2: Make sure IBKR TWS is open and running on port 4000.
+- Step 3: Open backtesting.py and import your strategy functions like so:
+    
+        ```python
+        from mystrategy import myStrategyBuySellConditionFunction, myStrategyGenerateAdditionalDataFunction
+        ```
+
+- Step 4: Change the variables strategy_name, strategy_buy_or_sell_condition_function, generate_additional_data_function to reflect your strategy. For example, if your strategy is called "myStrategy", you would change the variables to:
+
+        ```python
+        strategy_name = "myStrategy"
+        strategy_buy_or_sell_condition_function = myStrategyBuySellConditionFunction
+        generate_additional_data_function = myStrategyGenerateAdditionalDataFunction
+        ```
+
+- Step 4b: Change the variables barsize and duration to reflect your desired backtesting timeframe. A full list of possible values can be found here: https://interactivebrokers.github.io/tws-api/historical_bars.html#hd_duration. For example, if you want to backtest on 1-minute bars for the last 3 months, you would change the variables to:
+
+        ```python
+        barsize = "1 min"
+        duration = "3 M"
+        ```
+
+- Step 5: Run backtesting.py. The results will be saved in a CSV file in the directory data/Strategy Results, with the name of the file as your strategy name + barsize + duration (e.g. myStrategy1min3M). If you would like to customize the results from backtesting, you can modify the function create_summary_data in backtestingUtilities/simulationUtilities.py. This function is called after the backtesting is complete, and generates the results saved to the CSV file.
+
+Note: There is an equally functional backtesting framework in R, which can be found in the complementary repository "Backtesting Trading Strategies". However, I am no longer directly supporting the R version, and I recommend using the Python version instead.
 
 # Contact Me
 
