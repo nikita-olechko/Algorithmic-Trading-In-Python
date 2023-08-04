@@ -6,8 +6,8 @@ from strategies.greaterthan50barsma import sampleSMABuySellStrategy, generate50P
 ib = IB()
 try:
     ib.connect('127.0.0.1', 4000, clientId=50)
-except:
-    print("Could not connect to IBKR. Please check that Trader Workstation or IB Gateway is running.")
+except Exception:
+    print("Could not connect to IBKR. Check that Trader Workstation or IB Gateway is running.")
 
 strategy_name = '50PeriodSMA'
 strategy_buy_or_sell_condition_function = sampleSMABuySellStrategy
