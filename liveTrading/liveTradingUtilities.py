@@ -1,65 +1,5 @@
 # Create Bracket Order Method
 from ibapi.contract import Contract
-from ibapi.order import Order
-
-
-def bracketSellOrder(quantity=1, profitTarget=1.02, stopLoss=0.99, orderId=1):
-    # Create Parent Order / Initial Entry
-    parent = Order()
-    parent.orderId = orderId
-    parent.orderType = "MTK"
-    parent.action = "BUY"
-    parent.totalQuantity = quantity
-    parent.transmit = False
-    parent.eTradeOnly = False
-    parent.firmQuoteOnly = False
-    # Profit Target Order
-    profitTargetOrder = Order()
-    profitTargetOrder.orderId = orderId + 1
-    profitTargetOrder.orderType = "LMT"
-    profitTargetOrder.action = "SELL"
-    profitTargetOrder.totalQuantity = quantity
-    profitTargetOrder.lmtPrice = round(profitTarget, 2)
-    profitTargetOrder.transmit = True
-    profitTargetOrder.eTradeOnly = False
-    profitTargetOrder.firmQuoteOnly = False
-    # Stop Loss Order
-    stopLossOrder = Order()
-    stopLossOrder.orderId = orderId + 2
-    stopLossOrder.orderType = "STP"
-    stopLossOrder.action = "SELL"
-    stopLossOrder.totalQuantity = quantity
-    stopLossOrder.auxPrice = round(stopLoss, 2)
-    stopLossOrder.transmit = True
-    stopLossOrder.eTradeOnly = False
-    stopLossOrder.firmQuoteOnly = False
-    # Bracket Orders Array
-    bracketOrders = [parent, profitTargetOrder, stopLossOrder]
-    return bracketOrders
-
-
-def marketBuyOrder(orderId, quantity=1):
-    # Create order object
-    order = Order()
-    order.orderId = orderId
-    order.orderType = "MKT"  # or LMT etc..
-    order.action = "BUY"  # or "SELL"
-    order.totalQuantity = quantity
-    order.eTradeOnly = False
-    order.firmQuoteOnly = False
-    return order
-
-
-def marketSellOrder(orderId, quantity=1):
-    # Create order object
-    order = Order()
-    order.orderId = orderId
-    order.orderType = "MKT"
-    order.action = "SELL"
-    order.totalQuantity = quantity
-    order.eTradeOnly = False
-    order.firmQuoteOnly = False
-    return order
 
 
 def create_stock_contract_object(symbol):
@@ -78,3 +18,17 @@ def holding_gross_return(barDataFrame, current_average):
         return round(current_average / barDataFrame["Average"][0], 8)
     else:
         return 1
+
+
+def check_current_position(ib, ticker):
+    positions = ib.positions()
+    for position in positions:
+        if ticker is not None:
+            if position.contract.symbol == ticker:
+                return {ticker: {"Position": position.position, "Average Cost": position.avgCost,
+                                 "Market Value": position.marketPrice}}
+    return {}
+
+
+def calculate_current_return(barDataFrame, current_average, last_order_index):
+    pass

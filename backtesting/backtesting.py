@@ -1,7 +1,7 @@
 from ib_insync import IB
 
 from backtestingUtilities.simulationUtilities import run_strategy_on_list_of_tickers
-from strategies.greaterthan50barsma import sampleSMABuySellStrategy, generate50PeriodSMA_backtest
+from strategies.greaterthan60barsma import sampleSMABuySellStrategy, generate60PeriodSMA_backtest
 
 ib = IB()
 try:
@@ -11,7 +11,7 @@ except Exception:
 
 strategy_name = '50PeriodSMA'
 strategy_buy_or_sell_condition_function = sampleSMABuySellStrategy
-generate_additional_data_function = generate50PeriodSMA_backtest
+generate_additional_data_function = generate60PeriodSMA_backtest
 
 run_strategy_on_list_of_tickers(ib, strategy_name,
                                 strategy_buy_or_sell_condition_function=strategy_buy_or_sell_condition_function,

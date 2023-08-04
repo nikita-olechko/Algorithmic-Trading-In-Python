@@ -14,10 +14,11 @@ import math
 from datetime import datetime
 import time
 
+from liveTrading.customOrders import marketBuyOrder, marketSellOrder
 from utilities.dataGenerationUtilities import average_bars_by_minute
 from utilities.generalUtilities import get_starter_order_id
-from liveTrading.liveTradingUtilities import create_stock_contract_object, marketBuyOrder, marketSellOrder, \
-    holding_gross_return
+from liveTrading.liveTradingUtilities import create_stock_contract_object, holding_gross_return, \
+    calculate_current_return
 from strategies.greaterthan60barsma import generate60PeriodSMA, sampleSMABuySellStrategy
 
 # Necessary to run project as a scheduled Batch File, DO NOT DELETE
@@ -26,14 +27,14 @@ sys.path.append(project_path)
 
 
 # TODO: Set up IBController to Run TWS Automatically (including Login and shutdown)
-# TODO: Document trading returns (on EOD and on Keyboard interruption OR on loop completion)
 # TODO: Research some new strategies
 # TODO: Implement some new strategies
 # TODO: Record a video to demo project outside of market hours for interviews
 # TODO: Take into account current position at start OR sell off positions at end for day trading,
 #  make customizable for strategy
-# TODO: Write a readme for backtesting
-# TODO: Split Github Repos into testing and live trading [In Progress]
+# TODO: Document trading returns (on EOD and on Keyboard interruption OR on loop completion)
+# TODO: Write a readme for backtesting [Done]
+# TODO: Split Github Repos into testing and live trading [Done]
 # TODO: Create Summary statistics for backtesting [Done]
 # TODO: Write backtest data somewhere [Done]
 # TODO: Transform data to have minute-by-minute analysis [Done]
@@ -241,7 +242,8 @@ class Bot:
         # Historical Data to Catch Up
         bar_row = {"Date": bar.date, "Open": bar.open, "High": bar.high, "Low": bar.low, "Volume": bar.volume,
                    "Close": bar.close, "Average": bar.average, "BarCount": bar.barCount, "Orders": "",
-                   "HoldingGrossReturn": holding_gross_return(self.barDataFrame, bar.average)}
+                   "HoldingGrossReturn": holding_gross_return(self.barDataFrame, bar.average),
+                   "Current_Return": calculate_current_return(self.barDataFrame, bar.average, self.last_order_index)}
         self.barDataFrame.loc[len(self.barDataFrame)] = bar_row
         # self.bars.append(bar)
         if realtime:
@@ -261,6 +263,6 @@ class Bot:
 
 # Start Bot(s)
 bot1 = Bot(symbol="XOM", quantity=1, buySellConditionFunc=sampleSMABuySellStrategy,
-           generateNewDataFunc=generate60PeriodSMA, twsConnectionID=1, orderIDStarter=get_starter_order_id(0))
+           generateNewDataFunc=generate60PeriodSMA, twsConnectionID=1, orderIDStarter=get_starter_order_id(1))
 # bot2 = Bot(symbol="XOM", quantity=2, buySellConditionFunc=sampleSMABuySellStrategy,
-#            generateNewDataFunc=generate60PeriodSMA, twsConnectionID=2, orderIDStarter=get_starter_order_id(1))
+#            generateNewDataFunc=generate60PeriodSMA, twsConnectionID=2, orderIDStarter=get_starter_order_id(2))
