@@ -12,19 +12,19 @@ def generate60PeriodSMA_backtest(barDataFrame):
     return barDataFrame
 
 
-def sampleSMABuySellStrategy(barDataFrame, last_order_index, ticker=None, current_index=-1):
+def sampleSMABuySellStrategy(barDataFrame, last_order_index=0, ticker=None):
     """
     A function that returns "BUY", "SELL" or "" depending on some condition, in
     this case Average > 60Period SMA, BUY, and vice versa
     """
-    if barDataFrame.loc[barDataFrame.index[current_index], 'Average'] < \
-            barDataFrame.loc[barDataFrame.index[current_index], '60PeriodSMA']:
+    if barDataFrame.loc[barDataFrame.index[-1], 'Average'] < \
+            barDataFrame.loc[barDataFrame.index[-1], '60PeriodSMA']:
         if barDataFrame["Orders"][last_order_index] != 1:
             return 1
         else:
             return 2
-    elif barDataFrame.loc[barDataFrame.index[current_index], 'Average'] >= \
-            barDataFrame.loc[barDataFrame.index[current_index], '60PeriodSMA']:
+    elif barDataFrame.loc[barDataFrame.index[-1], 'Average'] >= \
+            barDataFrame.loc[barDataFrame.index[-1], '60PeriodSMA']:
         # Note: checking whether last_order_index != 0 ensures that we do not sell as our first order,
         # this can be changed for accounts that support short selling
         if barDataFrame["Orders"][last_order_index] != -1 and last_order_index != 0:

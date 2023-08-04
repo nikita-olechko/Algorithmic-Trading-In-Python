@@ -32,6 +32,7 @@ sys.path.append(project_path)
 # TODO: Record a video to demo project outside of market hours for interviews
 # TODO: Take into account current position at start OR sell off positions at end for day trading,
 #  make customizable for strategy
+# TODO: Automatically pick tws connection ID and order ID based on time of day or internal list
 # TODO: Document trading returns (on EOD and on Keyboard interruption OR on loop completion)
 # TODO: Write a readme for backtesting [Done]
 # TODO: Split Github Repos into testing and live trading [Done]
@@ -149,49 +150,6 @@ class Bot:
 
         return self.ib.openOrders
 
-    # Create Bracket Order Method
-    def bracketOrder(self, action, quantity, profitTarget, stopLoss):
-        # Initial entry
-        contract = Contract()
-        contract.symbol = self.symbol.upper()
-        # Set type of object to trade
-        contract.secType = "STK"
-        contract.exchange = "SMART"
-        contract.currency = "USD"
-        # Create Parent Order / Initial Entry
-        parent = Order()
-        parent.orderId = self.orderId
-        parent.orderType = "MTK"
-        parent.action = action
-        parent.totalQuantity = quantity
-        parent.transmit = False
-        parent.eTradeOnly = False
-        parent.firmQuoteOnly = False
-        # Profit Target Order
-        profitTargetOrder = Order()
-        profitTargetOrder.orderId = self.orderId + 1
-        profitTargetOrder.orderType = "LMT"
-        profitTargetOrder.action = "SELL"
-        profitTargetOrder.totalQuantity = quantity
-        profitTargetOrder.lmtPrice = round(profitTarget, 2)
-        profitTargetOrder.transmit = True
-        profitTargetOrder.eTradeOnly = False
-        profitTargetOrder.firmQuoteOnly = False
-        # Stop Loss Order
-        stopLossOrder = Order()
-        stopLossOrder.orderId = self.orderId + 2
-        stopLossOrder.orderType = "STP"
-        stopLossOrder.action = "SELL"
-        stopLossOrder.totalQuantity = quantity
-        stopLossOrder.auxPrice = round(stopLoss, 2)
-        stopLossOrder.transmit = True
-        stopLossOrder.eTradeOnly = False
-        stopLossOrder.firmQuoteOnly = False
-
-        # Bracket Orders Array
-        bracketOrders = [parent, profitTargetOrder, stopLossOrder]
-        return bracketOrders
-
     def place_orders(self, order_bracket, contract, oca=False):
         # Place the Bracket Order
         if type(order_bracket) != list:
@@ -211,10 +169,10 @@ class Bot:
         A method to determine whether an order should be placed or not based on a conditional strategy function
         """
         if self.barDataFrame["Orders"][self.last_order_index] != 1 and self.buySellConditionFunc(
-                self.barDataFrame) == 1:
+                self.barDataFrame, self.last_order_index, self.symbol) == 1:
             self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] = 1
         elif self.barDataFrame["Orders"][self.last_order_index] != -1 and self.buySellConditionFunc(
-                self.barDataFrame) == -1:
+                self.barDataFrame, self.last_order_index, self.symbol) == -1:
             self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] = -1
         else:
             pass
@@ -257,12 +215,13 @@ class Bot:
                 self.minuteDataFrame = average_bars_by_minute(self.barDataFrame, self.minuteDataFrame)
                 if self.generateNewDataFunc is not None:
                     self.barDataFrame = self.generateNewDataFunc(self.barDataFrame)
-                self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] = self.buySellConditionFunc(self.barDataFrame)
+                self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] = self.buySellConditionFunc(
+                    self.barDataFrame, self.last_order_index, self.symbol)
                 self.place_orders_if_needed()
 
 
 # Start Bot(s)
 bot1 = Bot(symbol="XOM", quantity=1, buySellConditionFunc=sampleSMABuySellStrategy,
-           generateNewDataFunc=generate60PeriodSMA, twsConnectionID=1, orderIDStarter=get_starter_order_id(1))
+           generateNewDataFunc=generate60PeriodSMA, twsConnectionID=1, orderIDStarter=get_starter_order_id(2))
 # bot2 = Bot(symbol="XOM", quantity=2, buySellConditionFunc=sampleSMABuySellStrategy,
 #            generateNewDataFunc=generate60PeriodSMA, twsConnectionID=2, orderIDStarter=get_starter_order_id(2))
