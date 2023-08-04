@@ -25,7 +25,9 @@ def sampleSMABuySellStrategy(barDataFrame, last_order_index, ticker=None, curren
             return 2
     elif barDataFrame.loc[barDataFrame.index[current_index], 'Average'] >= \
             barDataFrame.loc[barDataFrame.index[current_index], '60PeriodSMA']:
-        if barDataFrame["Orders"][last_order_index] != -1:
+        # Note: checking whether last_order_index != 0 ensures that we do not sell as our first order,
+        # this can be changed for accounts that support short selling
+        if barDataFrame["Orders"][last_order_index] != -1 and last_order_index != 0:
             return -1
         else:
             return 0
