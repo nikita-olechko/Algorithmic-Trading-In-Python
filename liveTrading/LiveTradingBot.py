@@ -17,8 +17,7 @@ import time
 from liveTrading.customOrders import marketBuyOrder, marketSellOrder
 from utilities.dataGenerationUtilities import average_bars_by_minute
 from utilities.generalUtilities import get_starter_order_id
-from liveTrading.liveTradingUtilities import create_stock_contract_object, holding_gross_return, \
-    calculate_current_return
+from liveTrading.liveTradingUtilities import create_stock_contract_object, holding_gross_return
 from strategies.greaterthan60barsma import generate60PeriodSMA, sampleSMABuySellStrategy
 
 # Necessary to run project as a scheduled Batch File, DO NOT DELETE
@@ -32,8 +31,8 @@ sys.path.append(project_path)
 # TODO: Record a video to demo project outside of market hours for interviews
 # TODO: Take into account current position at start OR sell off positions at end for day trading,
 #  make customizable for strategy
-# TODO: Automatically pick tws connection ID and order ID based on time of day or internal list
-# TODO: Document trading returns (on EOD and on Keyboard interruption OR on loop completion)
+# TODO: Document trading returns (cannot figure out simple modular system on strategies beyond BUY-SELL)
+# TODO: Automatically pick tws connection ID and order ID based on time of day or internal list [Done]
 # TODO: Write a readme for backtesting [Done]
 # TODO: Split Github Repos into testing and live trading [Done]
 # TODO: Create Summary statistics for backtesting [Done]
@@ -84,6 +83,39 @@ class IBApi(EWrapper, EClient):
     def reqOptionChain(self, reqId, symbol):
         self.reqSecDefOptParams(reqId, symbol, "", "STK", 0)
 
+    # Get Open Orders
+    def openOrders(self):
+        return self.openOrders
+
+    # Get Order History
+    def fills(self, ticker):
+        order_history = self.fills()
+        order_history_dict = {}
+        for order in order_history:
+            if order.contract.symbol == ticker:
+                order_name = ticker + "-" + str(order.execution.orderId) + "-" + order.execution.time.strftime(
+                    "%Y-%m-%d-%H:%M:%S")
+                order_history_dict[order_name] = {
+                    "Ticker": order.contract.symbol,
+                    "Order Id": order.execution.orderId,
+                    "Order Action": order.execution.side,
+                    "Order Quantity": order.execution.shares,
+                    "Order Price": order.execution.price,
+                    "Order Average Price": order.execution.avgPrice,
+                    "Order Fill Price": order.execution.price,
+                    "Order Fill Time": order.execution.time.strftime("%Y-%m-%d-%H:%M:%S"),
+                    "Order Commission": order.commissionReport.commission}
+        return order_history_dict
+
+    # get positions
+    def positions(self, ticker):
+        positions = self.positions()
+        for position in positions:
+            if position.contract.symbol == ticker:
+                return {ticker: {"Position": position.position, "Average Cost": position.avgCost,
+                                 "Market Value": position.marketPrice}}
+        return {}
+
     # Handle output of option chain
     def secDefOptParams(self, reqId, exchange, underlyingConId, underlyingSymbol, futFopExchange, underlyingSecType,
                         multiplier, expirations, strikes):
@@ -98,8 +130,9 @@ class Bot:
     reqId = 0
     initialbartime = datetime.now().astimezone(pytz.timezone("America/New_York"))
 
-    def __init__(self, symbol, buySellConditionFunc, quantity=1, generateNewDataFunc=None, twsConnectionID=1,
-                 orderIDStarter=get_starter_order_id(0)):
+    def __init__(self, symbol, buySellConditionFunc, quantity=1, generateNewDataFunc=None,
+                 twsConnectionID=int(time.strftime("%H%M%S")),
+                 orderIDStarter=get_starter_order_id(int(time.strftime("%H%M%S")))):
         # Connect to IB on init
         self.ib = IBApi(self)
         self.ib.connect("127.0.0.1", 4000, twsConnectionID)
@@ -200,8 +233,7 @@ class Bot:
         # Historical Data to Catch Up
         bar_row = {"Date": bar.date, "Open": bar.open, "High": bar.high, "Low": bar.low, "Volume": bar.volume,
                    "Close": bar.close, "Average": bar.average, "BarCount": bar.barCount, "Orders": "",
-                   "HoldingGrossReturn": holding_gross_return(self.barDataFrame, bar.average),
-                   "Current_Return": calculate_current_return(self.barDataFrame, bar.average, self.last_order_index)}
+                   "HoldingGrossReturn": holding_gross_return(self.barDataFrame, bar.average)}
         self.barDataFrame.loc[len(self.barDataFrame)] = bar_row
         # self.bars.append(bar)
         if realtime:
@@ -222,6 +254,6 @@ class Bot:
 
 # Start Bot(s)
 bot1 = Bot(symbol="XOM", quantity=1, buySellConditionFunc=sampleSMABuySellStrategy,
-           generateNewDataFunc=generate60PeriodSMA, twsConnectionID=1, orderIDStarter=get_starter_order_id(2))
+           generateNewDataFunc=generate60PeriodSMA)
 # bot2 = Bot(symbol="XOM", quantity=2, buySellConditionFunc=sampleSMABuySellStrategy,
-#            generateNewDataFunc=generate60PeriodSMA, twsConnectionID=2, orderIDStarter=get_starter_order_id(2))
+#            generateNewDataFunc=generate60PeriodSMA)
