@@ -16,7 +16,7 @@ import time
 
 from liveTrading.customOrders import marketBuyOrder, marketSellOrder
 from utilities.dataGenerationUtilities import average_bars_by_minute
-from utilities.generalUtilities import get_starter_order_id
+from utilities.generalUtilities import get_starter_order_id, get_tws_connection_id
 from liveTrading.liveTradingUtilities import create_stock_contract_object, holding_gross_return, \
     calculate_current_return
 from strategies.greaterthan60barsma import generate60PeriodSMA, sampleSMABuySellStrategy
@@ -98,9 +98,10 @@ class Bot:
     reqId = 0
     initialbartime = datetime.now().astimezone(pytz.timezone("America/New_York"))
 
-    def __init__(self, symbol, buySellConditionFunc, quantity=1, generateNewDataFunc=None, twsConnectionID=1,
-                 orderIDStarter=get_starter_order_id(0)):
+    def __init__(self, symbol, buySellConditionFunc, quantity=1, generateNewDataFunc=None):
         # Connect to IB on init
+        twsConnectionID = get_tws_connection_id()
+        orderIDStarter = get_starter_order_id()
         self.ib = IBApi(self)
         self.ib.connect("127.0.0.1", 4000, twsConnectionID)
         # Listen to socket on another thread
@@ -222,6 +223,6 @@ class Bot:
 
 # Start Bot(s)
 bot1 = Bot(symbol="XOM", quantity=1, buySellConditionFunc=sampleSMABuySellStrategy,
-           generateNewDataFunc=generate60PeriodSMA, twsConnectionID=1, orderIDStarter=get_starter_order_id(2))
-# bot2 = Bot(symbol="XOM", quantity=2, buySellConditionFunc=sampleSMABuySellStrategy,
-#            generateNewDataFunc=generate60PeriodSMA, twsConnectionID=2, orderIDStarter=get_starter_order_id(2))
+           generateNewDataFunc=generate60PeriodSMA)
+bot2 = Bot(symbol="XOM", quantity=2, buySellConditionFunc=sampleSMABuySellStrategy,
+           generateNewDataFunc=generate60PeriodSMA)

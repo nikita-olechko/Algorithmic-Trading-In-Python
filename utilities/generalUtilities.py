@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import datetime
 from utilities.__init__ import ROOT_DIRECTORY
 
 
@@ -38,5 +39,18 @@ def file_exists_in_folder(filename,
         return False
 
 
-def get_starter_order_id(n):
-    return n*1000000
+def get_time_of_day_as_string():
+    now = datetime.datetime.now()
+    return now.strftime("%H%M%S")
+
+
+def get_starter_order_id(n=[]):
+    time = get_time_of_day_as_string()
+    n.append(1)
+    return int(time + str(len(n) * 1000000))
+
+
+def get_tws_connection_id(n=[]):
+    time = get_time_of_day_as_string()
+    n.append(1)
+    return int(time + str(len(n)))
