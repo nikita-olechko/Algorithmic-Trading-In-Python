@@ -30,7 +30,7 @@ def create_historical_data_file_name(ticker, barsize, duration):
 
 
 def file_exists_in_folder(filename,
-                          folderPath="C:\\Users\\nikit\\OneDrive - BCIT\\R Projects\\Cleaning Up Automated Trading\\data\\"):
+                          folderPath):
     file_path = os.path.join(folderPath, filename)
     if os.path.exists(file_path):
         print(filename, " exists")
