@@ -12,7 +12,7 @@ def run_strategy_on_list_of_tickers(ib, strategy, strategy_buy_or_sell_condition
     if list_of_tickers is None:
         list_of_tickers = pd.read_csv("../backtesting/nyse-listed.csv")['ACT Symbol']
     try:
-        erred_tickers = pd.read_csv("../backtesting/data/ErroredTickers/nyse-listed.csv", header=False,
+        erred_tickers = pd.read_csv("../backtesting/data/ErroredTickers/ErroredTickers.csv", header=None,
                                     names=['Ticker'])
     except FileNotFoundError:
         erred_tickers = pd.DataFrame(columns=['Ticker'])
