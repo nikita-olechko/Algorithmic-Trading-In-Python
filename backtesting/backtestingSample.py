@@ -10,7 +10,7 @@ try:
 except Exception:
     print("Could not connect to IBKR. Check that Trader Workstation or IB Gateway is running.")
 
-strategy_name = '50PeriodSMA'
+strategy_name = '60PeriodSMA'
 strategy_buy_or_sell_condition_function = sampleSMABuySellStrategy
 generate_additional_data_function = generate60PeriodSMA_backtest
 
