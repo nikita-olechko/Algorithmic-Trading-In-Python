@@ -39,6 +39,7 @@ def run_strategy_on_list_of_tickers(ib, strategy, strategy_buy_or_sell_condition
                                                       *args, **kwargs)
             all_tickers_summary = pd.concat([all_tickers_summary, summary_df])
             all_tickers_summary.to_csv(summary_file_path_name, index=False)
+            print(f"Completed {ticker}")
 
 
 def simulate_trading_on_strategy(stk_data, ticker, strategy_buy_or_sell_condition_function,
@@ -81,7 +82,7 @@ def create_summary_data(stk_data, ticker, summary_df=None):
     trade_completed_indices = stk_data.loc[stk_data['Orders'] == -1].index
     final_position = stk_data['Position'].iloc[-1]
     final_position_percentage_of_price = final_position / stk_data['Average'].iloc[0]
-        
+
     average_position_post_trade = stk_data['Position'].loc[trade_completed_indices].mean()
     sd_position_post_trade = stk_data['Position'].loc[trade_completed_indices].std()
     max_position_post_trade = stk_data['Position'].loc[trade_completed_indices].max()
@@ -94,11 +95,15 @@ def create_summary_data(stk_data, ticker, summary_df=None):
     min_change_in_position_per_trade = changes_in_position_per_trade.min()
     max_change_in_position_per_trade = changes_in_position_per_trade.max()
 
-    average_position_post_trade_percentage = stk_data['Position'].loc[trade_completed_indices].mean() / stk_data["Average"].iloc[0]
-    sd_position_post_trade_percentage = stk_data['Position'].loc[trade_completed_indices].std() / stk_data["Average"].iloc[0]
-    max_position_post_trade_percentage = stk_data['Position'].loc[trade_completed_indices].max() / stk_data["Average"].iloc[0]
-    min_position_post_trade_percentage = stk_data['Position'].loc[trade_completed_indices].min() / stk_data["Average"].iloc[0]
-    
+    average_position_post_trade_percentage = stk_data['Position'].loc[trade_completed_indices].mean() / \
+                                             stk_data["Average"].iloc[0]
+    sd_position_post_trade_percentage = stk_data['Position'].loc[trade_completed_indices].std() / \
+                                        stk_data["Average"].iloc[0]
+    max_position_post_trade_percentage = stk_data['Position'].loc[trade_completed_indices].max() / \
+                                         stk_data["Average"].iloc[0]
+    min_position_post_trade_percentage = stk_data['Position'].loc[trade_completed_indices].min() / \
+                                         stk_data["Average"].iloc[0]
+
     average_change_in_position_per_trade_percentage = changes_in_position_per_trade.mean() / stk_data["Average"].iloc[0]
     sd_change_in_position_per_trade_percentage = changes_in_position_per_trade.std() / stk_data["Average"].iloc[0]
     min_change_in_position_per_trade_percentage = changes_in_position_per_trade.min() / stk_data["Average"].iloc[0]
@@ -135,7 +140,6 @@ def create_summary_data(stk_data, ticker, summary_df=None):
         'MinHoldingGrossReturn': [min_holding_gross_return],
         'MaxHoldingGrossReturn': [max_holding_gross_return]
     })
-
 
     if summary_df is not None:
         new_summary = pd.concat([summary_df, new_summary])
