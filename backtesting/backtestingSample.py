@@ -17,5 +17,5 @@ generate_additional_data_function = generate60PeriodSMA_backtest
 run_strategy_on_list_of_tickers(ib, strategy_name,
                                 strategy_buy_or_sell_condition_function=strategy_buy_or_sell_condition_function,
                                 generate_additional_data_function=generate_additional_data_function,
-                                barsize="1 Min", duration="1 D", list_of_tickers=['XOM', 'AAPL', 'MSFT', 'TSLA']
+                                barsize="1 Min", duration="1 D"
                                 )

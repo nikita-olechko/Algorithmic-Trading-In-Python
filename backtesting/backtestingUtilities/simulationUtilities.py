@@ -8,7 +8,7 @@ def run_strategy_on_list_of_tickers(ib, strategy, strategy_buy_or_sell_condition
                                     generate_additional_data_function=None,
                                     barsize="1 day", duration="3 Y", what_to_show="TRADES", list_of_tickers=None,
                                     initializing_order=1,
-                                    *args, **kwargs):
+                                    directory_offset=1, *args, **kwargs):
     if list_of_tickers is None:
         list_of_tickers = pd.read_csv("../backtesting/nyse-listed.csv")['ACT Symbol']
     try:
@@ -30,7 +30,7 @@ def run_strategy_on_list_of_tickers(ib, strategy, strategy_buy_or_sell_condition
 
     for ticker in list_of_tickers:
         gc.collect()
-        stk_data = retrieve_base_data(ib, ticker, barsize=barsize, duration=duration)
+        stk_data = retrieve_base_data(ib, ticker, barsize=barsize, duration=duration, directory_offset=directory_offset)
 
         if stk_data is not None:
             summary_df = simulate_trading_on_strategy(stk_data, ticker, strategy_buy_or_sell_condition_function,
@@ -147,8 +147,9 @@ def create_summary_data(stk_data, ticker, summary_df=None):
     return new_summary
 
 
-def retrieve_base_data(ib, ticker, barsize="1 day", duration="3 Y", what_to_show="TRADES"):
-    stk_data = get_stock_data(ib, ticker, barsize=barsize, duration=duration, what_to_show=what_to_show)
+def retrieve_base_data(ib, ticker, barsize="1 day", duration="3 Y", what_to_show="TRADES", directory_offset=0):
+    stk_data = get_stock_data(ib, ticker, barsize=barsize, duration=duration, what_to_show=what_to_show,
+                              directory_offset=directory_offset)
     # fix, should not work atm as cannot find the file
     if stk_data is None:
         csv_file_path = "../backtesting/data/ErroredTickers/ErroredTickers.csv"
