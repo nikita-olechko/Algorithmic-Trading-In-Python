@@ -93,6 +93,12 @@ Backtesting is now available in Python! Here are the steps to backtest a strateg
 
 Note: There is an equally functional backtesting framework in R, which can be found in the complementary repository "Backtesting Trading Strategies". However, I am no longer directly supporting the R version, and I recommend using the Python version instead.
 
+# Modelling
+
+Far be it from me to tell you how to model your data. However, a simple linear neural network framework using sci-kit learn is available in models/relative_price_change.py. You can see how parameters are added to base data, and how those parameters are used to model the next price change using a linear neural network. 
+
+For proper neural networks training I would recommend using a more robust framework like Tensorflow or PyTorch. However, this framework is a good starting point for those who are new to neural networks and want to get a feel for how they work.
+
 # Contact Me
 
 If you have any questions, suggestions, or want to discuss ideas about improving or extending the program, feel free to reach out to me:
@@ -103,4 +109,4 @@ If you have any questions, suggestions, or want to discuss ideas about improving
 
 # Disclaimer
 
-This bot is a proof-of-concept and is not meant to be used for live trading without careful review and enhancements. Financial trading involves substantial risk, and there is always the potential for loss. Your results may vary and depend on many factors, including but not limited to your background, experience, and work ethic. Any financial numbers referenced here, or on any of my sites and projects, are simply estimates or projections and should not be considered exact, actual, or a promise of potential earnings. Use this bot at your own risk. I am NOT an accredited financial advisor.
+Use this bot at your own risk. This bot is a proof-of-concept and is not meant to be used for live trading without careful review and understanding of its risks and limitations. Financial trading involves substantial risk and should not be done without careful analysis and observation. Any financial numbers referenced here, or on any of my sites and projects, are simply estimates or projections and should not be considered exact, actual, or any form of guarantee of potential earnings. I am NOT an accredited financial advisor. This is a PERSONAL project and is NOT meant to be used for commercial purposes. I am NOT responsible for any losses you may incur by using this bot and offer no guarantees of any kind, including but not limited to strategy profitability, strategy accuracy, software functionality, and software security.
