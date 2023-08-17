@@ -31,28 +31,6 @@ def create_log_price_variables(stk_data, list_of_periods=range(1, 11)):
     return stk_data
 
 
-def create_volume_changes_period_to_period(stk_data, list_of_periods=range(1, 11)):
-    stk_data["change_in_volume"] = (stk_data["Volume"].shift(-1) - stk_data["Volume"]).shift(1)
-    for period in list_of_periods:
-        volume_change_name = f'Period{period}ToPeriod{period - 1}VolumeChange'
-        percentage_volume_change_name = f'Period{period}ToPeriod{period - 1}PercentageVolumeChange'
-        stk_data[volume_change_name] = stk_data["Volume"].shift(period - 1) - stk_data["Volume"].shift(period)
-        stk_data[percentage_volume_change_name] = (stk_data["Volume"].shift(period - 1) - stk_data[
-            "Volume"].shift(period)) / stk_data["Volume"].shift(period - 1)
-    return stk_data
-
-
-def create_volume_changes_variables_initial_period(stk_data, list_of_periods=range(1, 11)):
-    stk_data["change_in_volume"] = (stk_data["Volume"].shift(-1) - stk_data["Volume"]).shift(1)
-    for period in list_of_periods:
-        volume_change_name = str(period) + 'PeriodVolumeChange'
-        percentage_volume_change_name = str(period) + 'PeriodPercentageVolumeChange'
-        stk_data[volume_change_name] = stk_data["Volume"] - stk_data["Volume"].shift(period)
-        stk_data[percentage_volume_change_name] = (stk_data["Volume"] - stk_data["Volume"].shift(period)) \
-                                                  / stk_data["Volume"]
-    return stk_data
-
-
 def create_volume_change_variables(stk_data, list_of_periods=range(1, 11)):
     log_volume = np.log(stk_data["Volume"])
     stk_data["log_volume"] = log_volume
