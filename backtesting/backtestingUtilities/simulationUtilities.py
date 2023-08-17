@@ -162,7 +162,7 @@ def retrieve_base_data(ib, ticker, barsize="1 day", duration="3 Y", what_to_show
     return stk_data
 
 
-def get_stock_data(ib, ticker, barsize='1 min', duration='1 M', what_to_show='TRADES'):
+def get_stock_data(ib, ticker, barsize='1 min', duration='1 M', what_to_show='TRADES', directory_offset=0):
     contract = Contract()
     contract.symbol = ticker
     contract.secType = 'STK'
@@ -171,12 +171,18 @@ def get_stock_data(ib, ticker, barsize='1 min', duration='1 M', what_to_show='TR
     contract.primaryExchange = 'NYSE'
     ticker = contract.symbol
     file_name = create_historical_data_file_name(ticker, barsize, duration)
-    folder_path = os.path.join(os.getcwd(), "../backtesting/data", "Historical Data")
+
+    # Get the current working directory
+    current_directory = os.getcwd()
+
+    # Calculate the new directory path with offset
+    new_directory = os.path.abspath(os.path.join(current_directory, "../" * directory_offset))
+    folder_path = os.path.join(new_directory, "backtesting/data", "Historical Data")
 
     # If the data already exists, retrieve it
     if os.path.isfile(os.path.join(folder_path, file_name)):
         try:
-            stk_data = pd.read_csv("../backtesting/data/Historical Data/" + file_name, parse_dates=True, index_col=0)
+            stk_data = pd.read_csv(os.path.join(folder_path, file_name), parse_dates=True, index_col=0)
         except Exception as e:
             print("An error occurred:", str(e))
             stk_data = None
