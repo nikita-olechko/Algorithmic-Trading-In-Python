@@ -12,3 +12,4 @@ statsmodels~=0.14.0
 django-basic-stats~=0.2.0
 patsy~=0.5.3
 scipy~=1.10.1
+joblib~=1.2.0
