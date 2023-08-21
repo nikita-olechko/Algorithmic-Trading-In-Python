@@ -99,9 +99,9 @@ Note: There is an equally functional backtesting framework in R, which can be fo
 
 # Modelling
 
-Far be it from me to tell you how to model your data. However, a simple linear neural network framework using sci-kit learn is available in models/relative_price_change.py. You can see how parameters are added to base data, and how those parameters are used to model the next price change using a linear neural network. 
+Far be it from me to tell you how to model your data. However, a simple linear model framework using sci-kit learn is available in models/relative_price_change.py. You can see how parameters are added to base data, and how those parameters are used to model the next price change using a linear model. 
 
-For proper neural networks training I would recommend using a more robust framework like Tensorflow or PyTorch. However, this framework is a good starting point for those who are new to neural networks and want to get a feel for how they work.
+More importantly, in liveTest_relative_price_change you can see how to directly implement your model into operating on live market data. This can then be directly translated into a trading strategy.
 
 # Contact Me
 
