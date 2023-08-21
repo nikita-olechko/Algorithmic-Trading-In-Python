@@ -7,6 +7,8 @@ from sklearn import (
 import pickle
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import MinMaxScaler
+
 from backtesting.backtestingUtilities.simulationUtilities import get_stock_data
 from utilities.generalUtilities import get_tws_connection_id, initialize_ib_connection
 
@@ -89,12 +91,14 @@ def create_relative_price_change_linear_regression_model(symbol, endDateTime='',
 
     train = data
 
-    X_train = train[x_columns]
+    x_train = train[x_columns]
     y_train = train[y_column]
 
-    # Create and train the model
+    scaler = MinMaxScaler()
+    x_train_scaled = scaler.fit_transform(x_train)
+
     lm = linear_model.LinearRegression()
-    lm.fit(X_train, y_train)
+    lm.fit(x_train_scaled, y_train)
 
     if save_model:
         model_filename = f'model_objects/relative_price_change_linear_model_{symbol}.pkl'
@@ -129,8 +133,11 @@ def create_relative_price_change_random_forest_model(symbol, endDateTime='', sav
     x_train = train[x_columns]
     y_train = train[y_column]
 
+    scaler = MinMaxScaler()
+    x_train_scaled = scaler.fit_transform(x_train)
+
     forest = RandomForestRegressor()
-    forest.fit(x_train, y_train)
+    forest.fit(x_train_scaled, y_train)
 
     if save_model:
         model_filename = f'model_objects/relative_price_change_random_forest_{symbol}.pkl'
