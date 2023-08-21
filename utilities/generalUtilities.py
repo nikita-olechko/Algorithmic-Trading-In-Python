@@ -1,6 +1,9 @@
 import os
 import pandas as pd
 import datetime
+
+from ib_insync import IB
+
 from utilities.__init__ import ROOT_DIRECTORY
 
 
@@ -54,3 +57,12 @@ def get_tws_connection_id(n=[]):
     time = get_time_of_day_as_string()
     n.append(1)
     return int(time + str(len(n)))
+
+
+def initialize_ib_connection():
+    ib = IB()
+    try:
+        ib.connect('127.0.0.1', 4000, clientId=get_tws_connection_id())
+    except Exception:
+        print("Could not connect to IBKR. Check that Trader Workstation or IB Gateway is running.")
+    return ib

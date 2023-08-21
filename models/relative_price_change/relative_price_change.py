@@ -8,7 +8,7 @@ import pickle
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 from backtesting.backtestingUtilities.simulationUtilities import get_stock_data
-from utilities.generalUtilities import get_tws_connection_id
+from utilities.generalUtilities import get_tws_connection_id, initialize_ib_connection
 
 
 def create_log_price_variables(stk_data, list_of_periods=range(1, 11)):
@@ -67,11 +67,7 @@ def above_X_correct_direction(actual, predicted, x=0):
 
 
 def create_relative_price_change_linear_regression_model(symbol):
-    ib = IB()
-    try:
-        ib.connect('127.0.0.1', 4000, clientId=get_tws_connection_id())
-    except Exception:
-        print("Could not connect to IBKR. Check that Trader Workstation or IB Gateway is running.")
+    ib = initialize_ib_connection()
     stk_data = get_stock_data(ib, "XOM", "1 Min", "2 M", directory_offset=2)
     stk_data = create_log_price_variables(stk_data)
     stk_data['NextPeriodChangeInLogPrice'] = stk_data['log_price'].shift(-1) - stk_data['log_price']
@@ -103,14 +99,11 @@ def create_relative_price_change_linear_regression_model(symbol):
     model_filename = f'model_objects/relative_price_change_linear_model_{symbol}.pkl'
     with open(model_filename, 'wb') as file:
         pickle.dump(lm, file)
+    return lm
 
 
 def create_relative_price_change_random_forest_model(symbol):
-    ib = IB()
-    try:
-        ib.connect('127.0.0.1', 4000, clientId=get_tws_connection_id())
-    except Exception:
-        print("Could not connect to IBKR. Check that Trader Workstation or IB Gateway is running.")
+    ib = initialize_ib_connection()
     stk_data = get_stock_data(ib, "XOM", "1 Min", "2 M", directory_offset=2)
     stk_data = create_log_price_variables(stk_data)
     stk_data['NextPeriodChangeInLogPrice'] = stk_data['log_price'].shift(-1) - stk_data['log_price']
@@ -141,6 +134,7 @@ def create_relative_price_change_random_forest_model(symbol):
     model_filename = f'model_objects/relative_price_change_random_forest_{symbol}.pkl'
     with open(model_filename, 'wb') as file:
         pickle.dump(forest, file)
+    return forest
 
 
 def analyze_model_performance(model_object, test_data):
