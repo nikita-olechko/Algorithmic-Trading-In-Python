@@ -101,7 +101,7 @@ Note: There is an equally functional backtesting framework in R, which can be fo
 
 Far be it from me to tell you how to model your data. However, a simple linear model framework using sci-kit learn is available in models/relative_price_change.py. You can see how parameters are added to base data, and how those parameters are used to model the next price change using a linear model. 
 
-More importantly, in liveTest_relative_price_change you can see how to directly implement your model into operating on live market data. This can then be directly translated into a trading strategy.
+More importantly, in liveTest_relative_price_change you can see how to directly implement your model into operating on live market data. This can then be directly translated into a trading strategy. Note that it is designed for separate models for individual tickers, I.E. "relative_price_change_XOM.pkl" is unique to the ticker "XOM".
 
 # Contact Me
 
