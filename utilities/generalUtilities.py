@@ -2,8 +2,8 @@ import os
 
 import pandas as pd
 import datetime
+from datetime import datetime, timedelta
 
-from adodbapi.apibase import DateTime
 from ib_insync import IB
 
 from utilities.__init__ import ROOT_DIRECTORY
@@ -65,10 +65,15 @@ def initialize_ib_connection():
     ib = IB()
     try:
         ib.connect('127.0.0.1', 4000, clientId=get_tws_connection_id())
+        print("Connected to IBKR")
     except Exception:
         print("Could not connect to IBKR. Check that Trader Workstation or IB Gateway is running.")
     return ib
 
 
-def ibkr_query_time(months):
-    return DateTime.Now.ToUniversalTime().AddMonths(-months).ToString("yyyyMMdd-HH:mm:ss")
+def ibkr_query_time(month_offset=0):
+    today = datetime.now()
+    end_date = datetime(today.year, today.month, 1) - timedelta(days=1)
+    end_date -= timedelta(days=30 * month_offset)  # Subtracting months as days
+
+    return end_date.strftime("%Y%m%d %H:%M:%S")

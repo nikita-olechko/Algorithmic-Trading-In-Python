@@ -173,7 +173,7 @@ def get_stock_data(ib, ticker, barsize='1 min', duration='1 M', what_to_show='TR
     contract.currency = 'USD'
     contract.primaryExchange = 'NYSE'
     ticker = contract.symbol
-    file_name = create_historical_data_file_name(ticker, barsize, duration)
+    file_name = create_historical_data_file_name(ticker, barsize, duration, endDateTime)
 
     # Get the current working directory
     current_directory = os.getcwd()
@@ -220,11 +220,11 @@ def add_analysis_data_to_historical_data(stk_data, ticker):
     return stk_data
 
 
-def create_historical_data_file_name(ticker, barsize, duration):
+def create_historical_data_file_name(ticker, barsize, duration, endDateTime=''):
     file_ticker = ticker.replace(" ", "")
     file_barsize = barsize.replace(" ", "")
     file_duration = duration.replace(" ", "")
-    filename = f"Historical{file_ticker}{file_barsize}{file_duration}"
+    filename = f"Historical{file_ticker}{file_barsize}{file_duration}{endDateTime}"
     return filename
 
 
