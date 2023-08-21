@@ -27,24 +27,9 @@ sys.path.append(project_path)
 
 
 # TODO: Set up IBController to Run TWS Automatically (including Login and shutdown)
-# TODO: Research some new strategies
-# TODO: Implement some new strategies
 # TODO: Record a video to demo project outside of market hours for interviews
-# TODO: Take into account current position at start OR sell off positions at end for day trading,
-#  make customizable for strategy
-# TODO: Automatically pick tws connection ID and order ID based on time of day or internal list
+# TODO: Take into account current position at start of day
 # TODO: Document trading returns (on EOD and on Keyboard interruption OR on loop completion)
-# TODO: Write a readme for backtesting [Done]
-# TODO: Split Github Repos into testing and live trading [Done]
-# TODO: Create Summary statistics for backtesting [Done]
-# TODO: Write backtest data somewhere [Done]
-# TODO: Transform data to have minute-by-minute analysis [Done]
-# TODO: Refactor Global variables to exist within classes so code is more modular [Done]
-# TODO: Trade multiple tickers/strategies at once [Done]
-# TODO: Code a sample strategy to test new system on [Done]
-# TODO: Set up system to run at 6:35 am [Done]
-# TODO: Change IBKR restart time to after market close [Done]
-
 
 # Class for interactive brokers connection within Bot
 class IBApi(EWrapper, EClient):
