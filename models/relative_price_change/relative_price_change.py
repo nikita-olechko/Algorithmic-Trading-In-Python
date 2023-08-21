@@ -140,8 +140,9 @@ def create_relative_price_change_random_forest_model(symbol, endDateTime='', sav
 
 
 def analyze_model_performance(model_object, test_data):
-    lm = model_object
-
+    """
+    A function to analyze model performance based on scikit learn model objects.
+    """
     always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount', 'Orders',
                                 'Position']
     extra_columns_to_remove = ['NextPeriodChangeInLogPrice']
@@ -158,7 +159,7 @@ def analyze_model_performance(model_object, test_data):
     y_test = data[y_column]
 
     # Predict based on test data
-    predict_price_lm = lm.predict(x_test)
+    predict_price_lm = model_object.predict(x_test)
     predict_price_lm = predict_price_lm.reshape(-1, 1)
     predict_price_lm = pd.DataFrame(predict_price_lm, columns=['Predicted'])
     predict_price_lm.index = y_test.index
