@@ -147,9 +147,10 @@ def create_summary_data(stk_data, ticker, summary_df=None):
     return new_summary
 
 
-def retrieve_base_data(ib, ticker, barsize="1 day", duration="3 Y", what_to_show="TRADES", directory_offset=0):
+def retrieve_base_data(ib, ticker, barsize="1 day", duration="3 Y", what_to_show="TRADES", directory_offset=0,
+                       endDateTime=''):
     stk_data = get_stock_data(ib, ticker, barsize=barsize, duration=duration, what_to_show=what_to_show,
-                              directory_offset=directory_offset)
+                              directory_offset=directory_offset, endDateTime=endDateTime)
     # fix, should not work atm as cannot find the file
     if stk_data is None:
         csv_file_path = "../backtesting/data/ErroredTickers/ErroredTickers.csv"
@@ -163,7 +164,8 @@ def retrieve_base_data(ib, ticker, barsize="1 day", duration="3 Y", what_to_show
     return stk_data
 
 
-def get_stock_data(ib, ticker, barsize='1 min', duration='1 M', what_to_show='TRADES', directory_offset=0):
+def get_stock_data(ib, ticker, barsize='1 min', duration='1 M', what_to_show='TRADES', directory_offset=0,
+                   endDateTime=''):
     contract = Contract()
     contract.symbol = ticker
     contract.secType = 'STK'
@@ -192,7 +194,7 @@ def get_stock_data(ib, ticker, barsize='1 min', duration='1 M', what_to_show='TR
         try:
             bars = ib.reqHistoricalData(
                 contract,
-                endDateTime='',
+                endDateTime=endDateTime,
                 durationStr=duration,
                 barSizeSetting=barsize,
                 whatToShow=what_to_show,

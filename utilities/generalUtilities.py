@@ -1,7 +1,9 @@
 import os
+
 import pandas as pd
 import datetime
 
+from adodbapi.apibase import DateTime
 from ib_insync import IB
 
 from utilities.__init__ import ROOT_DIRECTORY
@@ -66,3 +68,7 @@ def initialize_ib_connection():
     except Exception:
         print("Could not connect to IBKR. Check that Trader Workstation or IB Gateway is running.")
     return ib
+
+
+def ibkr_query_time(months):
+    return DateTime.Now.ToUniversalTime().AddMonths(-months).ToString("yyyyMMdd-HH:mm:ss")
