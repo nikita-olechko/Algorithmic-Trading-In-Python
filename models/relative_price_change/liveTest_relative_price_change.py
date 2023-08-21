@@ -23,7 +23,7 @@ def create_log_price_variables_last_row(stk_data, list_of_periods=range(1, 11)):
     log_price = np.log(stk_data["Average"].iloc[-1])
     stk_data.at[stk_data.index[-1], "log_price"] = log_price
     for period in list_of_periods:
-        shifted_log_price = stk_data["log_price"].iloc[-period]
+        shifted_log_price = stk_data["log_price"].iloc[-period - 1]
         stk_data.at[stk_data.index[-1], f'{period}period_shifted_log_price'] = shifted_log_price
         stk_data.at[stk_data.index[-1], f'{period}period_change_in_log_price'] = log_price - shifted_log_price
     return stk_data
@@ -32,8 +32,13 @@ def create_log_price_variables_last_row(stk_data, list_of_periods=range(1, 11)):
 def create_volume_change_variables_last_row(stk_data, list_of_periods=range(1, 11)):
     log_volume = np.log(stk_data["Volume"].iloc[-1])
     stk_data.at[stk_data.index[-1], "log_volume"] = log_volume
+    # Note: volume is actually upshifted one period here so all the names are one off
+    # but the model is built and works with it so whatever: 1period_change_in_log_volume is always 0,
+    # 2period_change_in_log_volume is actually 1period_change_in_log_volume. Etc.
+    # NOTE. THIS ^^^ DOES MATTER. FIX IT TO BE ACCURATE BECAUSE IT IS ACCURATE IN THE MODEL AND THUS WRONG.
+    # NOTE: Reference x_test to see the variables that the model is created from and make sure they are the same
     for period in list_of_periods:
-        shifted_log_volume = stk_data["log_volume"].iloc[-period]
+        shifted_log_volume = stk_data["log_volume"].iloc[-period - 1]
         stk_data.at[stk_data.index[-1], f'{period}period_shifted_log_volume'] = shifted_log_volume
         stk_data.at[stk_data.index[-1], f'{period}period_change_in_log_volume'] = log_volume - shifted_log_volume
     return stk_data
@@ -59,11 +64,11 @@ def boolean_bollinger_band_location_last_row(minuteDataFrame):
     minuteDataFrame.at[minuteDataFrame.index[-1], 'PriceAboveUpperBB2SD'] = 1 if last_row['Average'] > last_row[
         'UpperBB2SD'] else 0
     minuteDataFrame.at[minuteDataFrame.index[-1], 'PriceAboveUpperBB1SD'] = 1 if (last_row['Average'] > last_row[
-        'UpperBB1SD']) and (last_row['PriceAboveUpperBB2SD'] == 0) else 0
+        'UpperBB1SD']) and (minuteDataFrame.at[minuteDataFrame.index[-1], 'PriceAboveUpperBB2SD'] == 0) else 0
     minuteDataFrame.at[minuteDataFrame.index[-1], 'PriceBelowLowerBB2SD'] = 1 if last_row['Average'] < last_row[
         'LowerBB2SD'] else 0
     minuteDataFrame.at[minuteDataFrame.index[-1], 'PriceBelowLowerBB1SD'] = 1 if (last_row['Average'] < last_row[
-        'LowerBB1SD']) and (last_row['PriceBelowLowerBB2SD'] == 0) else 0
+        'LowerBB1SD']) and (minuteDataFrame.at[minuteDataFrame.index[-1], 'PriceBelowLowerBB2SD'] == 0) else 0
     return minuteDataFrame
 
 
@@ -75,20 +80,22 @@ def last_period_change_in_log_price(minuteDataFrame):
     return minuteDataFrame
 
 
-def generate_model_data(minuteDataFrame, model_filename='relative_price_change.pkl'):
+def generate_model_data(minuteDataFrame, symbol, model='relative_price_change'):
     minuteDataFrame = create_log_price_variables_last_row(minuteDataFrame)
     minuteDataFrame = create_volume_change_variables_last_row(minuteDataFrame)
     minuteDataFrame = generate_bollinger_bands_last_row(minuteDataFrame)
     minuteDataFrame = boolean_bollinger_band_location_last_row(minuteDataFrame)
     minuteDataFrame = last_period_change_in_log_price(minuteDataFrame)
-    always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount', 'Orders',
-                                'Position']
+    minuteDataFrame.at[minuteDataFrame.index[-1], 'PredictedPriceChange'] = 0
+    always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'BarCount', 'Orders']
+    additional_non_model_columns = ['ActualPriceChange', 'PredictedPriceChange']
+    model_filename = f'model_objects/{model}_{symbol}.pkl'
     x_columns = list(minuteDataFrame.columns)
-    for column in always_redundant_columns:
+    for column in always_redundant_columns + additional_non_model_columns:
         x_columns.remove(column)
     with open(model_filename, 'rb') as file:
         loaded_lm = joblib.load(file)
-        predicted_price = loaded_lm.predict(minuteDataFrame[x_columns].iloc[-1])  # .values.reshape(1, -1)
+        predicted_price = loaded_lm.predict(minuteDataFrame[x_columns].iloc[-1].values.reshape(1, -1))
     minuteDataFrame.at[minuteDataFrame.index[-1], 'PredictedPriceChange'] = predicted_price
     return minuteDataFrame
 
@@ -175,8 +182,6 @@ class ModelAccuracyBot:
         contract.exchange = "SMART"
         contract.currency = "USD"
         self.ib.reqIds(-1)
-        # Request Market Data
-        # self.ib.reqRealTimeBars(0, contract, 5, "TRADES", useRTH=True, realTimeBarsOptions=[])
         self.ib.reqHistoricalData(self.reqId, contract, "", "1 D", self.barsize, "TRADES", 1, 1, True, [])
 
     # Listen to socket
@@ -189,19 +194,19 @@ class ModelAccuracyBot:
         bar_row = {"Date": bar.date, "Open": bar.open, "High": bar.high, "Low": bar.low, "Volume": bar.volume,
                    "Close": bar.close, "Average": bar.average, "BarCount": bar.barCount, "Orders": ""}
         self.barDataFrame.loc[len(self.barDataFrame)] = bar_row
-        #Note: minuteDataFrame is above realtime condition to ensure historical data is in minuteDataFrame.
+        # Note: minuteDataFrame is above realtime condition to ensure historical data is in minuteDataFrame.
         # We do not want this in liveTrading - this technically performs redundant operations but is insignificant for testing.
         self.minuteDataFrame = average_bars_by_minute(self.barDataFrame, self.minuteDataFrame)
+
         if realtime:
             # self.ib.reqOptionChain(self.reqId, self.symbol)
             print("New Bar Received: ", self.symbol)
             print(bar_row)
             # On Bar Close, after a minute has passed
             if self.generateNewDataFunc is not None:
-                self.minuteDataFrame = self.generateNewDataFunc(self.minuteDataFrame)
+                self.minuteDataFrame = self.generateNewDataFunc(self.minuteDataFrame, self.symbol, self.model)
                 self.minuteDataFrame.to_csv(f"liveTest_{self.model}_{self.symbol}.csv")
 
 
-# Store actual price change, store predicted price change, store whether predicted price change was in correct direction
 bot1 = ModelAccuracyBot(symbol="XOM", model="relative_price_change",
                         generateNewDataFunc=generate_model_data)

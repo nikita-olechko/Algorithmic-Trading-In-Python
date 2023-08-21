@@ -1,16 +1,6 @@
-import matplotlib
-import matplotlib.pyplot as plt
-import statsmodels.api as sm
-import stats as stats
-import random
 import numpy as np
 import pandas as pd
-import patsy
-import sklearn
-import sklearn.model_selection
-import sklearn.ensemble
 from ib_insync import IB
-from scipy import stats
 from sklearn import (
     linear_model, metrics, neural_network, pipeline, model_selection
 )
@@ -75,97 +65,96 @@ def above_X_correct_direction(actual, predicted, x=0):
     else:
         return np.nan
 
-ib = IB()
-try:
-    ib.connect('127.0.0.1', 4000, clientId=get_tws_connection_id())
-except Exception:
-    print("Could not connect to IBKR. Check that Trader Workstation or IB Gateway is running.")
-stk_data = get_stock_data(ib, "XOM", "5 Mins", "1 Y", directory_offset=2)
-stk_data = create_log_price_variables(stk_data)
-stk_data['NextPeriodChangeInLogPrice'] = stk_data['log_price'].shift(-1) - stk_data['log_price']
-stk_data = create_volume_change_variables(stk_data)
-stk_data = generate_bollinger_bands(stk_data)
-stk_data = boolean_bollinger_band_location(stk_data)
 
-always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount', 'Orders',
-                            'Position']
-extra_columns_to_remove = ['NextPeriodChangeInLogPrice']
+def create_relative_price_change_model(symbol):
+    ib = IB()
+    try:
+        ib.connect('127.0.0.1', 4000, clientId=get_tws_connection_id())
+    except Exception:
+        print("Could not connect to IBKR. Check that Trader Workstation or IB Gateway is running.")
+    stk_data = get_stock_data(ib, "XOM", "1 Min", "2 M", directory_offset=2)
+    stk_data = create_log_price_variables(stk_data)
+    stk_data['NextPeriodChangeInLogPrice'] = stk_data['log_price'].shift(-1) - stk_data['log_price']
+    stk_data = create_volume_change_variables(stk_data)
+    stk_data = generate_bollinger_bands(stk_data)
+    stk_data = boolean_bollinger_band_location(stk_data)
 
-x_columns = list(stk_data.columns)
-y_column = 'NextPeriodChangeInLogPrice'
+    always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount', 'Orders',
+                                'Position']
+    extra_columns_to_remove = ['NextPeriodChangeInLogPrice']
 
-for column in always_redundant_columns + extra_columns_to_remove:
-    x_columns.remove(column)
+    x_columns = list(stk_data.columns)
+    y_column = 'NextPeriodChangeInLogPrice'
 
-data = stk_data.dropna()
+    for column in always_redundant_columns + extra_columns_to_remove:
+        x_columns.remove(column)
 
-train = data.iloc[:int(len(data) * (2 / 3))]
-test = data.iloc[int(len(data) * (2 / 3)):]
+    data = stk_data.dropna()
 
-X_train = train[x_columns]
-y_train = train[y_column]
+    train = data
 
-X2 = sm.add_constant(X_train)
-est = sm.OLS(y_train, X_train)
-est2 = est.fit()
-print(est2.summary())
+    X_train = train[x_columns]
+    y_train = train[y_column]
 
-# Create and train the model
-lm = linear_model.LinearRegression()
-lm.fit(X_train, y_train)
-x_test = test[x_columns]
-y_test = test[y_column]
+    # Create and train the model
+    lm = linear_model.LinearRegression()
+    lm.fit(X_train, y_train)
 
-# Predict based on test data
-predict_price_lm = lm.predict(x_test)
-predict_price_lm = predict_price_lm.reshape(-1, 1)
-predict_price_lm = pd.DataFrame(predict_price_lm, columns=['Predicted'])
-predict_price_lm.index = y_test.index
-rmse_lm = np.sqrt(mean_squared_error(predict_price_lm, y_test))
-
-# Conduct further analysis on results data
-results = pd.DataFrame()
-results['Predicted'] = predict_price_lm
-results['Actual'] = y_test
-results['Residual'] = results['Actual'] - results['Predicted']
-results['Correct_Direction'] = results.apply(lambda x: 1 if x['Actual'] * x['Predicted'] >= 0 else 0, axis=1)
-twoSD = np.std(results['Predicted']) * 2
-oneSD = np.std(results['Predicted'])
-results['Above_2SD_Correct_Direction'] = results.apply(
-    lambda x: above_X_correct_direction(x['Actual'], x['Predicted'], x=twoSD), axis=1)
-results['Above_1SD_Correct_Direction'] = results.apply(
-    lambda x: above_X_correct_direction(x['Actual'], x['Predicted'], x=oneSD), axis=1)
-
-results['Between_1and2SD_Correct_Direction'] = results.apply(
-    lambda x: x['Above_1SD_Correct_Direction'] if np.isnan(x['Above_2SD_Correct_Direction']) else np.nan, axis=1)
+    model_filename = f'model_objects/relative_price_change_{symbol}.pkl'
+    with open(model_filename, 'wb') as file:
+        pickle.dump(lm, file)
 
 
-above_two_sd_series = results['Above_2SD_Correct_Direction'].dropna()
-above_one_sd_series = results['Above_1SD_Correct_Direction'].dropna()
-between_one_and_two_sd_series = results['Between_1and2SD_Correct_Direction'].dropna()
+def analyze_model_performance(model_object, test_data):
+    lm = model_object
 
-print(f"Overall Correct_Direction: {results['Correct_Direction'].sum() / len(results)}")
-print(f"Above_2SD_Correct_Direction: {above_two_sd_series.sum() / len(above_two_sd_series)}")
-print(f"Above_1SD_Correct_Direction: {above_one_sd_series.sum() / len(above_one_sd_series)}")
-print(
-    f"Between_1and2SD_Correct_Direction: {between_one_and_two_sd_series.sum() / len(between_one_and_two_sd_series)}")
+    always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount', 'Orders',
+                                'Position']
+    extra_columns_to_remove = ['NextPeriodChangeInLogPrice']
 
-# plt.plot(predict_price_lm, y_test, '.')
-# plt.xlabel("Predicted Change in Log Price (x)")
-# plt.ylabel("True Change in Log Price (y)")
-# plt.title("Scatter Plot of Predicted and True Change in Log Price (Linear Regression)")
-# plt.show()
-# a = pd.DataFrame(predict_price_lm, y_test).reset_index()
-# a = a.rename(columns={y_column: "True_Value", 0: "Predicted_Value"})
-# a.corr()
+    x_columns = list(test_data.columns)
+    y_column = 'NextPeriodChangeInLogPrice'
 
-# Todo: Try applying to only outliers and see if predictive power increases when at extremes
-# Todo: Check predictive power on live market data on a bunch of assets
+    for column in always_redundant_columns + extra_columns_to_remove:
+        x_columns.remove(column)
 
-model_filename = 'relative_price_change.pkl'
-with open(model_filename, 'wb') as file:
-    pickle.dump(lm, file)
+    data = test_data.dropna()
 
-# to import
-# with open(model_filename, 'rb') as file:
-#     loaded_lm = joblib.load(file)
+    x_test = data[x_columns]
+    y_test = data[y_column]
+
+    # Predict based on test data
+    predict_price_lm = lm.predict(x_test)
+    predict_price_lm = predict_price_lm.reshape(-1, 1)
+    predict_price_lm = pd.DataFrame(predict_price_lm, columns=['Predicted'])
+    predict_price_lm.index = y_test.index
+    rmse_lm = np.sqrt(mean_squared_error(predict_price_lm, y_test))
+
+    # Conduct further analysis on results data
+    results = pd.DataFrame()
+    results['Predicted'] = predict_price_lm
+    results['Actual'] = y_test
+    results['Residual'] = results['Actual'] - results['Predicted']
+    results['Correct_Direction'] = results.apply(lambda x: 1 if x['Actual'] * x['Predicted'] >= 0 else 0, axis=1)
+    twoSD = np.std(results['Predicted']) * 2
+    oneSD = np.std(results['Predicted'])
+    results['Above_2SD_Correct_Direction'] = results.apply(
+        lambda x: above_X_correct_direction(x['Actual'], x['Predicted'], x=twoSD), axis=1)
+    results['Above_1SD_Correct_Direction'] = results.apply(
+        lambda x: above_X_correct_direction(x['Actual'], x['Predicted'], x=oneSD), axis=1)
+
+    results['Between_1and2SD_Correct_Direction'] = results.apply(
+        lambda x: x['Above_1SD_Correct_Direction'] if np.isnan(x['Above_2SD_Correct_Direction']) else np.nan, axis=1)
+
+    above_two_sd_series = results['Above_2SD_Correct_Direction'].dropna()
+    above_one_sd_series = results['Above_1SD_Correct_Direction'].dropna()
+    between_one_and_two_sd_series = results['Between_1and2SD_Correct_Direction'].dropna()
+
+    print(f"Overall Correct_Direction: {results['Correct_Direction'].sum() / len(results)}")
+    print(f"Above_2SD_Correct_Direction: {above_two_sd_series.sum() / len(above_two_sd_series)}")
+    print(f"Above_1SD_Correct_Direction: {above_one_sd_series.sum() / len(above_one_sd_series)}")
+    print(
+        f"Between_1and2SD_Correct_Direction: {between_one_and_two_sd_series.sum() / len(between_one_and_two_sd_series)}")
+
+    results = pd.concat([results, data], axis=1)
+    return results
