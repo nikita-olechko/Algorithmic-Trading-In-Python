@@ -66,7 +66,7 @@ def above_X_correct_direction(actual, predicted, x=0):
         return np.nan
 
 
-def create_relative_price_change_model(symbol):
+def create_relative_price_change_linear_regression_model(symbol):
     ib = IB()
     try:
         ib.connect('127.0.0.1', 4000, clientId=get_tws_connection_id())
