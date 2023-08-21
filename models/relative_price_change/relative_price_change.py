@@ -66,9 +66,9 @@ def above_X_correct_direction(actual, predicted, x=0):
         return np.nan
 
 
-def create_relative_price_change_linear_regression_model(symbol):
+def create_relative_price_change_linear_regression_model(symbol, endDateTime='', save_model=True):
     ib = initialize_ib_connection()
-    stk_data = get_stock_data(ib, "XOM", "1 Min", "2 M", directory_offset=2)
+    stk_data = get_stock_data(ib, "XOM", "1 Min", "2 M", directory_offset=2, endDateTime=endDateTime)
     stk_data = create_log_price_variables(stk_data)
     stk_data['NextPeriodChangeInLogPrice'] = stk_data['log_price'].shift(-1) - stk_data['log_price']
     stk_data = create_volume_change_variables(stk_data)
@@ -96,15 +96,16 @@ def create_relative_price_change_linear_regression_model(symbol):
     lm = linear_model.LinearRegression()
     lm.fit(X_train, y_train)
 
-    model_filename = f'model_objects/relative_price_change_linear_model_{symbol}.pkl'
-    with open(model_filename, 'wb') as file:
-        pickle.dump(lm, file)
+    if save_model:
+        model_filename = f'model_objects/relative_price_change_linear_model_{symbol}.pkl'
+        with open(model_filename, 'wb') as file:
+            pickle.dump(lm, file)
     return lm
 
 
-def create_relative_price_change_random_forest_model(symbol):
+def create_relative_price_change_random_forest_model(symbol, endDateTime='', save_model=True):
     ib = initialize_ib_connection()
-    stk_data = get_stock_data(ib, "XOM", "1 Min", "2 M", directory_offset=2)
+    stk_data = get_stock_data(ib, "XOM", "1 Min", "2 M", directory_offset=2, endDateTime=endDateTime)
     stk_data = create_log_price_variables(stk_data)
     stk_data['NextPeriodChangeInLogPrice'] = stk_data['log_price'].shift(-1) - stk_data['log_price']
     stk_data = create_volume_change_variables(stk_data)
@@ -131,9 +132,10 @@ def create_relative_price_change_random_forest_model(symbol):
     forest = RandomForestRegressor()
     forest.fit(x_train, y_train)
 
-    model_filename = f'model_objects/relative_price_change_random_forest_{symbol}.pkl'
-    with open(model_filename, 'wb') as file:
-        pickle.dump(forest, file)
+    if save_model:
+        model_filename = f'model_objects/relative_price_change_random_forest_{symbol}.pkl'
+        with open(model_filename, 'wb') as file:
+            pickle.dump(forest, file)
     return forest
 
 
