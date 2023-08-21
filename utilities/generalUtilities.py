@@ -2,7 +2,6 @@ import os
 
 import pandas as pd
 import datetime
-from datetime import datetime, timedelta
 
 from ib_insync import IB
 
@@ -66,14 +65,15 @@ def initialize_ib_connection():
     try:
         ib.connect('127.0.0.1', 4000, clientId=get_tws_connection_id())
         print("Connected to IBKR")
-    except Exception:
+    except Exception as e:
+        print(e)
         print("Could not connect to IBKR. Check that Trader Workstation or IB Gateway is running.")
     return ib
 
 
 def ibkr_query_time(month_offset=0):
-    today = datetime.now()
-    end_date = datetime(today.year, today.month, 1) - timedelta(days=1)
-    end_date -= timedelta(days=30 * month_offset)  # Subtracting months as days
+    today = datetime.datetime.now()
+    end_date = datetime.datetime(today.year, today.month, 1) - datetime.timedelta(days=1)
+    end_date -= datetime.timedelta(days=30 * month_offset)  # Subtracting months as days
 
     return end_date.strftime("%Y%m%d %H:%M:%S")

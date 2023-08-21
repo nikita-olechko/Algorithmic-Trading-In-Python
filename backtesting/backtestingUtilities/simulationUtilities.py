@@ -224,6 +224,7 @@ def create_historical_data_file_name(ticker, barsize, duration, endDateTime=''):
     file_ticker = ticker.replace(" ", "")
     file_barsize = barsize.replace(" ", "")
     file_duration = duration.replace(" ", "")
+    endDateTime = endDateTime.split(" ")[0]
     filename = f"Historical{file_ticker}{file_barsize}{file_duration}{endDateTime}"
     return filename
 
