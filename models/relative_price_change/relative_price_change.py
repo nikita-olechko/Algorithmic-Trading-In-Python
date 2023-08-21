@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from ib_insync import IB
 from sklearn import (
-    linear_model, metrics, neural_network, pipeline, model_selection
+    linear_model
 )
 import pickle
 from sklearn.ensemble import RandomForestRegressor
@@ -100,9 +100,47 @@ def create_relative_price_change_linear_regression_model(symbol):
     lm = linear_model.LinearRegression()
     lm.fit(X_train, y_train)
 
-    model_filename = f'model_objects/relative_price_change_{symbol}.pkl'
+    model_filename = f'model_objects/relative_price_change_linear_model_{symbol}.pkl'
     with open(model_filename, 'wb') as file:
         pickle.dump(lm, file)
+
+
+def create_relative_price_change_random_forest_model(symbol):
+    ib = IB()
+    try:
+        ib.connect('127.0.0.1', 4000, clientId=get_tws_connection_id())
+    except Exception:
+        print("Could not connect to IBKR. Check that Trader Workstation or IB Gateway is running.")
+    stk_data = get_stock_data(ib, "XOM", "1 Min", "2 M", directory_offset=2)
+    stk_data = create_log_price_variables(stk_data)
+    stk_data['NextPeriodChangeInLogPrice'] = stk_data['log_price'].shift(-1) - stk_data['log_price']
+    stk_data = create_volume_change_variables(stk_data)
+    stk_data = generate_bollinger_bands(stk_data)
+    stk_data = boolean_bollinger_band_location(stk_data)
+
+    always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount', 'Orders',
+                                'Position']
+    extra_columns_to_remove = ['NextPeriodChangeInLogPrice']
+
+    x_columns = list(stk_data.columns)
+    y_column = 'NextPeriodChangeInLogPrice'
+
+    for column in always_redundant_columns + extra_columns_to_remove:
+        x_columns.remove(column)
+
+    data = stk_data.dropna()
+
+    train = data
+
+    x_train = train[x_columns]
+    y_train = train[y_column]
+
+    forest = RandomForestRegressor()
+    forest.fit(x_train, y_train)
+
+    model_filename = f'model_objects/relative_price_change_random_forest_{symbol}.pkl'
+    with open(model_filename, 'wb') as file:
+        pickle.dump(forest, file)
 
 
 def analyze_model_performance(model_object, test_data):
