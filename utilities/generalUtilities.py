@@ -133,3 +133,59 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
         stk_data.to_csv(os.path.join(folder_path, file_name))
         print("Historical Data Created")
     return stk_data
+
+
+def get_days_of_historical_data(ib, ticker, days=1, barsize='1 Min', what_to_show='TRADES',
+                                directory_offset=0):
+    duration = '1 D'
+    contract = Contract()
+    contract.symbol = ticker
+    contract.secType = 'STK'
+    contract.exchange = 'SMART'
+    contract.currency = 'USD'
+    contract.primaryExchange = 'NYSE'
+    ticker = contract.symbol
+    file_name = create_historical_data_file_name(ticker, barsize, duration=f"{days}D", endDateTime=ibkr_query_time(0))
+
+    # Get the current working directory
+    current_directory = os.getcwd()
+
+    # Calculate the new directory path with offset
+    current_directory = os.path.abspath(os.path.join(current_directory, "../" * directory_offset))
+    folder_path = os.path.join(current_directory, "backtesting/data", "Historical Data")
+
+    # If the data already exists, retrieve it
+    if os.path.isfile(os.path.join(folder_path, file_name)):
+        try:
+            stk_data = pd.read_csv(os.path.join(folder_path, file_name), parse_dates=True, index_col=0)
+        except Exception as e:
+            print("An error occurred retrieving the file:", str(e))
+            stk_data = None
+    else:
+        stk_data = pd.DataFrame()
+        for day in range(days + 1):
+            endDateTime = ibkr_query_time(day)
+            try:
+                bars = ib.reqHistoricalData(
+                    contract,
+                    endDateTime=endDateTime,
+                    durationStr=duration,
+                    barSizeSetting=barsize,
+                    whatToShow=what_to_show,
+                    useRTH=True,
+                    formatDate=1)
+                incremental_data = util.df(bars)
+                incremental_data.columns = incremental_data.columns.str.title()
+                if len(incremental_data) <= 50:
+                    incremental_data = None
+                stk_data = pd.concat([incremental_data, stk_data])
+                print(f"Day {day} of {days} complete.")
+            except Exception as e:
+                print("An error occurred:", str(e))
+                print(f"Day {day} of {days} skipped.")
+        stk_data = stk_data.drop_duplicates()
+        stk_data = stk_data.sort_values(by=['Date'])
+        stk_data = add_analysis_data_to_historical_data(stk_data, ticker)
+        stk_data.to_csv(os.path.join(folder_path, file_name))
+        print("Historical Data Created")
+    return
