@@ -172,29 +172,35 @@ def analyze_model_performance(model_object, test_data):
     results['Actual'] = y_test
     results['Residual'] = results['Actual'] - results['Predicted']
     results['Correct_Direction'] = results.apply(lambda x: 1 if x['Actual'] * x['Predicted'] >= 0 else 0, axis=1)
-    twoSD = np.std(results['Predicted']) * 2
-    oneSD = np.std(results['Predicted'])
+
+    results['PriceAboveUpperBB2SD'] = x_test['PriceAboveUpperBB2SD']
+    results['PriceAboveUpperBB1SD'] = x_test['PriceAboveUpperBB1SD']
+    results['PriceBelowLowerBB2SD'] = x_test['PriceBelowLowerBB2SD']
+    results['PriceBelowLowerBB1SD'] = x_test['PriceBelowLowerBB1SD']
 
     # FIXME: The model does not always recognize where in the BBbands we are. Redo the condition functions.
     # Debug here and see what the process actually does
     results['Above_2SD_Correct_Direction'] = results.apply(
-        lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x_test['PriceAboveUpperBB2SD']), axis=1)
+        lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x['PriceAboveUpperBB2SD']), axis=1)
     results['Above_1SD_Correct_Direction'] = results.apply(
-        lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x_test['PriceAboveUpperBB1SD']), axis=1)
+        lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x['PriceAboveUpperBB1SD']), axis=1)
     results['Below_2SD_Correct_Direction'] = results.apply(
-        lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x_test['PriceBelowUpperBB2SD']), axis=1)
+        lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x['PriceBelowLowerBB2SD']), axis=1)
     results['Below_1SD_Correct_Direction'] = results.apply(
-        lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x_test['PriceBelowUpperBB1SD']), axis=1)
+        lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x['PriceBelowLowerBB1SD']), axis=1)
 
     above_two_sd_series = results['Above_2SD_Correct_Direction'].dropna()
     above_one_sd_series = results['Above_1SD_Correct_Direction'].dropna()
-    between_one_and_two_sd_series = results['Between_1and2SD_Correct_Direction'].dropna()
+    below_two_sd_series = results['Below_2SD_Correct_Direction'].dropna()
+    below_one_sd_series = results['Below_1SD_Correct_Direction'].dropna()
 
     print(f"Overall Correct_Direction: {results['Correct_Direction'].sum() / len(results)}")
     print(f"Above_2SD_Correct_Direction: {above_two_sd_series.sum() / len(above_two_sd_series)}")
     print(f"Above_1SD_Correct_Direction: {above_one_sd_series.sum() / len(above_one_sd_series)}")
-    print(
-        f"Between_1and2SD_Correct_Direction: {between_one_and_two_sd_series.sum() / len(between_one_and_two_sd_series)}")
+    print(f"Below_2SD_Correct_Direction: {below_two_sd_series.sum() / len(below_two_sd_series)}")
+    print(f"Below_1SD_Correct_Direction: {below_one_sd_series.sum() / len(below_one_sd_series)}")
+
+    results.drop(['PriceAboveUpperBB2SD', 'PriceAboveUpperBB1SD', 'PriceBelowLowerBB2SD', 'PriceBelowLowerBB1SD'], axis=1, inplace=True)
 
     results = pd.concat([results, data], axis=1)
     return results
