@@ -88,14 +88,14 @@ Backtesting is now available in Python! Here are the steps to backtest a strateg
         generate_additional_data_function = myStrategyGenerateAdditionalDataFunction
         ```
 
-- Step 4b: Change the variables barsize and duration to reflect your desired backtesting timeframe. A full list of possible values can be found here: https://interactivebrokers.github.io/tws-api/historical_bars.html#hd_duration. For example, if you want to backtest on 1-minute bars for the last 3 months, you would change the variables to:
+- Step 4b: Change the variables barsize and duration to reflect your desired backtesting timeframe. A full list of possible values can be found here: https://interactivebrokers.github.io/tws-api/historical_bars.html#hd_duration. For example, if you want to backtest on 1-minute bars for the last 2 months, you would change the variables to:
 
         ```python
         barsize = "1 min"
-        duration = "3 M"
+        duration = "2 M"
         ```
 
-- Step 5: Run backtesting.py. The results will be saved in a CSV file in the directory data/Strategy Results, with the name of the file as your strategy name + barsize + duration (e.g. myStrategy1min3M). If you would like to customize the results from backtesting, you can modify the function create_summary_data in backtestingUtilities/simulationUtilities.py. This function is called after the backtesting is complete, and generates the results saved to the CSV file.
+- Step 5: Run backtesting.py. The results will be saved in a CSV file in the directory data/Strategy Results, with the name of the file as your strategy name + barsize + duration (e.g. myStrategy1min2M). If you would like to customize the results from backtesting, you can modify the function create_summary_data in backtestingUtilities/simulationUtilities.py. This function is called after the backtesting is complete, and generates the results saved to the CSV file.
 
 Note: There is an equally functional backtesting framework in R, which can be found in the complementary repository "Backtesting Trading Strategies". However, I am no longer supporting the R version, and I recommend using the Python version instead.
 
