@@ -30,7 +30,8 @@ def run_strategy_on_list_of_tickers(ib, strategy, strategy_buy_or_sell_condition
 
     for ticker in list_of_tickers:
         gc.collect()
-        stk_data = retrieve_base_data(ib, ticker, barsize=barsize, duration=duration, directory_offset=directory_offset)
+        stk_data = retrieve_base_data(ib, ticker, barsize=barsize, duration=duration, directory_offset=directory_offset,
+                                      what_to_show=what_to_show)
 
         if stk_data is not None:
             summary_df = simulate_trading_on_strategy(stk_data, ticker, strategy_buy_or_sell_condition_function,
