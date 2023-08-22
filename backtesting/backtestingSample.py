@@ -1,5 +1,3 @@
-from ib_insync import IB
-
 from backtestingUtilities.simulationUtilities import run_strategy_on_list_of_tickers
 from strategies.greaterthan60barsma import sampleSMABuySellStrategy, generate60PeriodSMA_backtest
 from utilities.generalUtilities import initialize_ib_connection
