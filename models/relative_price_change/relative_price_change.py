@@ -57,11 +57,12 @@ def boolean_bollinger_band_location(minuteDataFrame):
     return minuteDataFrame
 
 
-def above_X_correct_direction(actual, predicted, x=0):
-    if actual * predicted >= 0 and abs(predicted) > x:
-        return 1
-    elif actual * predicted < 0:
-        return 0
+def SD_correct_direction(actual, predicted, condition_series):
+    if condition_series == 1:
+        if actual * predicted >= 0:
+            return 1
+        else:
+            return 0
     else:
         return np.nan
 
@@ -133,7 +134,7 @@ def create_relative_price_change_random_forest_model(symbol, endDateTime='', sav
     forest.fit(x_train, y_train)
 
     if save_model:
-        model_filename = f'model_objects/relative_price_change_random_forest_{symbol}.pkl'
+        model_filename = f'model_objects/relative_price_change_random_forest_model_{symbol}.pkl'
         with open(model_filename, 'wb') as file:
             pickle.dump(forest, file)
     return forest
@@ -173,13 +174,17 @@ def analyze_model_performance(model_object, test_data):
     results['Correct_Direction'] = results.apply(lambda x: 1 if x['Actual'] * x['Predicted'] >= 0 else 0, axis=1)
     twoSD = np.std(results['Predicted']) * 2
     oneSD = np.std(results['Predicted'])
-    results['Above_2SD_Correct_Direction'] = results.apply(
-        lambda x: above_X_correct_direction(x['Actual'], x['Predicted'], x=twoSD), axis=1)
-    results['Above_1SD_Correct_Direction'] = results.apply(
-        lambda x: above_X_correct_direction(x['Actual'], x['Predicted'], x=oneSD), axis=1)
 
-    results['Between_1and2SD_Correct_Direction'] = results.apply(
-        lambda x: x['Above_1SD_Correct_Direction'] if np.isnan(x['Above_2SD_Correct_Direction']) else np.nan, axis=1)
+    # FIXME: The model does not always recognize where in the BBbands we are. Redo the condition functions.
+    # Debug here and see what the process actually does
+    results['Above_2SD_Correct_Direction'] = results.apply(
+        lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x_test['PriceAboveUpperBB2SD']), axis=1)
+    results['Above_1SD_Correct_Direction'] = results.apply(
+        lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x_test['PriceAboveUpperBB1SD']), axis=1)
+    results['Below_2SD_Correct_Direction'] = results.apply(
+        lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x_test['PriceBelowUpperBB2SD']), axis=1)
+    results['Below_1SD_Correct_Direction'] = results.apply(
+        lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x_test['PriceBelowUpperBB1SD']), axis=1)
 
     above_two_sd_series = results['Above_2SD_Correct_Direction'].dropna()
     above_one_sd_series = results['Above_1SD_Correct_Direction'].dropna()
