@@ -32,7 +32,7 @@ As a demonstrative example, the bot is set to use a sample strategy based on the
 - Clone the repository to your local machine.
 - Install the necessary Python packages using pip:
 
-      pip install pandas==2.0.3 numpy==1.25.0 matplotlib==3.7.2 seaborn~=0.12.2 ibapi~=9.81.1.post1 scikit-learn==1.3.0 ta~=0.10.2 pytz~=2023.3 APScheduler==3.7.0                 ib_insync==0.9.69 statsmodels~=0.14.0 django-basic-stats~=0.2.0 patsy~=0.5.3 scipy~=1.10.1 joblib~=1.2.0
+      pip install pandas==2.0.3 numpy==1.25.0 matplotlib==3.7.2 seaborn~=0.12.2 ibapi~=9.81.1.post1 scikit-learn==1.3.0 ta~=0.10.2 pytz~=2023.3 APScheduler==3.7.0 ib_insync==0.9.69 statsmodels~=0.14.0 django-basic-stats~=0.2.0 patsy~=0.5.3 scipy~=1.10.1 joblib~=1.2.0
 
 
 Update the Bot instantiation at the bottom of LiveTradingBot.py to reflect your desired trading symbol, quantity, and strategy.
