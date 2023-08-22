@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
-    <file url="file://$PROJECT_DIR$/models/relative_price_change/model_objects/relative_price_change_XOM.pkl" charset="windows-1252" />
-    <file url="file://$PROJECT_DIR$/models/relative_price_change/model_objects/relative_price_change_XOM.pkl" charset="windows-1252" />
+    <file url="file://$PROJECT_DIR$/models/relative_price_change/model_objects/relative_price_change_linear_model_XOM.pkl" charset="windows-1252" />
   </component>
 </project>

@@ -12,7 +12,7 @@ def generate60PeriodSMA_backtest(barDataFrame):
     return barDataFrame
 
 
-def sampleSMABuySellStrategy(barDataFrame, last_order_index=0, current_index=-1, ticker=None):
+def sampleSMABuySellStrategy(barDataFrame, last_order_index=0, ticker=""):
     """
     A function that returns 1 (buy), -1 (sell), 2 (hold), or 0 (nothing) depending on some condition, in
     this case Average > 60Period SMA, BUY, and vice versa

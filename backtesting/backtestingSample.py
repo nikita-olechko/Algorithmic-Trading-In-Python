@@ -1,14 +1,8 @@
-from ib_insync import IB
-
 from backtestingUtilities.simulationUtilities import run_strategy_on_list_of_tickers
 from strategies.greaterthan60barsma import sampleSMABuySellStrategy, generate60PeriodSMA_backtest
-from utilities.generalUtilities import get_tws_connection_id
+from utilities.generalUtilities import initialize_ib_connection
 
-ib = IB()
-try:
-    ib.connect('127.0.0.1', 4000, clientId=get_tws_connection_id())
-except Exception:
-    print("Could not connect to IBKR. Check that Trader Workstation or IB Gateway is running.")
+ib = initialize_ib_connection()
 
 strategy_name = '60PeriodSMA'
 strategy_buy_or_sell_condition_function = sampleSMABuySellStrategy

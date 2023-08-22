@@ -69,86 +69,10 @@ def SD_correct_direction(actual, predicted, condition_series):
         return np.nan
 
 
-def create_relative_price_change_linear_regression_model(symbol, endDateTime='', save_model=True, barsize="1 Min",
-                                                         duration="2 M"):
-    ib = initialize_ib_connection()
-    stk_data = get_stock_data(ib, "XOM", barsize, duration, directory_offset=2, endDateTime=endDateTime)
-    stk_data = create_log_price_variables(stk_data)
-    stk_data['NextPeriodChangeInLogPrice'] = stk_data['log_price'].shift(-1) - stk_data['log_price']
-    stk_data = create_volume_change_variables(stk_data)
-    stk_data = generate_bollinger_bands(stk_data)
-    stk_data = boolean_bollinger_band_location(stk_data)
-
-    always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount', 'Orders',
-                                'Position']
-    extra_columns_to_remove = ['NextPeriodChangeInLogPrice']
-
-    x_columns = list(stk_data.columns)
-    y_column = 'NextPeriodChangeInLogPrice'
-
-    for column in always_redundant_columns + extra_columns_to_remove:
-        x_columns.remove(column)
-
-    data = stk_data.dropna()
-
-    train = data
-
-    X_train = train[x_columns]
-    y_train = train[y_column]
-
-    # Create and train the model
-    lm = linear_model.LinearRegression()
-    lm.fit(X_train, y_train)
-
-    if save_model:
-        model_filename = f'model_objects/relative_price_change_linear_model_{symbol}_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
-        with open(model_filename, 'wb') as file:
-            pickle.dump(lm, file)
-    return lm
-
-
-def create_relative_price_change_random_forest_model(symbol, endDateTime='', save_model=True, barsize="1 Min",
-                                                     duration="2 M"):
-    ib = initialize_ib_connection()
-    stk_data = get_stock_data(ib, "XOM", barsize, duration, directory_offset=2, endDateTime=endDateTime)
-    stk_data = create_log_price_variables(stk_data)
-    stk_data['NextPeriodChangeInLogPrice'] = stk_data['log_price'].shift(-1) - stk_data['log_price']
-    stk_data = create_volume_change_variables(stk_data)
-    stk_data = generate_bollinger_bands(stk_data)
-    stk_data = boolean_bollinger_band_location(stk_data)
-
-    always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount', 'Orders',
-                                'Position']
-    extra_columns_to_remove = ['NextPeriodChangeInLogPrice']
-
-    x_columns = list(stk_data.columns)
-    y_column = 'NextPeriodChangeInLogPrice'
-
-    for column in always_redundant_columns + extra_columns_to_remove:
-        x_columns.remove(column)
-
-    data = stk_data.dropna()
-
-    train = data
-
-    x_train = train[x_columns]
-    y_train = train[y_column]
-
-    forest = RandomForestRegressor()
-    forest.fit(x_train, y_train)
-
-    if save_model:
-        model_filename = f'model_objects/relative_price_change_random_forest_model_{symbol}_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
-        with open(model_filename, 'wb') as file:
-            pickle.dump(forest, file)
-    return forest
-
-
-def create_relative_price_change_mlp_model(symbol, endDateTime='', save_model=True, barsize="1 Min",
-                                           duration="2 M", data=None):
+def prepare_training_data(data, barsize, duration, endDateTime):
     ib = initialize_ib_connection()
     stk_data = data
-    if data is not None:
+    if data is None:
         stk_data = get_stock_data(ib, "XOM", barsize, duration, directory_offset=2, endDateTime=endDateTime)
     stk_data = create_log_price_variables(stk_data)
     stk_data['NextPeriodChangeInLogPrice'] = stk_data['log_price'].shift(-1) - stk_data['log_price']
@@ -167,7 +91,49 @@ def create_relative_price_change_mlp_model(symbol, endDateTime='', save_model=Tr
         x_columns.remove(column)
 
     data = stk_data.dropna()
+    return data, x_columns, y_column
 
+
+def create_relative_price_change_linear_regression_model(symbol, endDateTime='', save_model=True, barsize="1 Min",
+                                                         duration="2 M", data=None):
+    data, x_columns, y_column = prepare_training_data(data, barsize, duration, endDateTime)
+    train = data
+
+    X_train = train[x_columns]
+    y_train = train[y_column]
+
+    # Create and train the model
+    lm = linear_model.LinearRegression()
+    lm.fit(X_train, y_train)
+
+    if save_model:
+        model_filename = f'model_objects/relative_price_change_linear_model_{symbol}_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
+        with open(model_filename, 'wb') as file:
+            pickle.dump(lm, file)
+    return lm
+
+
+def create_relative_price_change_random_forest_model(symbol, endDateTime='', save_model=True, barsize="1 Min",
+                                                     duration="2 M", data=None):
+    data, x_columns, y_column = prepare_training_data(data, barsize, duration, endDateTime)
+    train = data
+
+    x_train = train[x_columns]
+    y_train = train[y_column]
+
+    forest = RandomForestRegressor()
+    forest.fit(x_train, y_train)
+
+    if save_model:
+        model_filename = f'model_objects/relative_price_change_random_forest_model_{symbol}_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
+        with open(model_filename, 'wb') as file:
+            pickle.dump(forest, file)
+    return forest
+
+
+def create_relative_price_change_mlp_model(symbol, endDateTime='', save_model=True, barsize="1 Min",
+                                           duration="2 M", data=None):
+    data, x_columns, y_column = prepare_training_data(data, barsize, duration, endDateTime)
     x_train, x_test, y_train, y_test = train_test_split(data[x_columns], data[y_column], test_size=0.2, random_state=42)
 
     nn_regressor = MLPRegressor(max_iter=1000, random_state=42)
@@ -183,12 +149,13 @@ def create_relative_price_change_mlp_model(symbol, endDateTime='', save_model=Tr
     grid_search.fit(x_train, y_train)
 
     best_nn_regressor = grid_search.best_estimator_
-    best_params = grid_search.best_params_
 
-    # Predict using the best neural network model
-    y_pred = best_nn_regressor.predict(x_test)
+    if save_model:
+        model_filename = f'model_objects/relative_price_change_mlp_model_{symbol}_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
+        with open(model_filename, 'wb') as file:
+            pickle.dump(best_nn_regressor, file)
 
-    pass
+    return best_nn_regressor
 
 
 def analyze_model_performance(model_object, test_data):
