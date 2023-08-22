@@ -1,14 +1,16 @@
 import numpy as np
 import pandas as pd
-from ib_insync import IB
 from sklearn import (
     linear_model
 )
 import pickle
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_squared_error
 from backtesting.backtestingUtilities.simulationUtilities import get_stock_data
-from utilities.generalUtilities import get_tws_connection_id, initialize_ib_connection
+from utilities.generalUtilities import initialize_ib_connection
+
+from sklearn.neural_network import MLPRegressor
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.metrics import mean_squared_error
 
 
 def create_log_price_variables(stk_data, list_of_periods=range(1, 11)):
@@ -67,9 +69,10 @@ def SD_correct_direction(actual, predicted, condition_series):
         return np.nan
 
 
-def create_relative_price_change_linear_regression_model(symbol, endDateTime='', save_model=True):
+def create_relative_price_change_linear_regression_model(symbol, endDateTime='', save_model=True, barsize="1 Min",
+                                                         duration="2 M"):
     ib = initialize_ib_connection()
-    stk_data = get_stock_data(ib, "XOM", "1 Min", "2 M", directory_offset=2, endDateTime=endDateTime)
+    stk_data = get_stock_data(ib, "XOM", barsize, duration, directory_offset=2, endDateTime=endDateTime)
     stk_data = create_log_price_variables(stk_data)
     stk_data['NextPeriodChangeInLogPrice'] = stk_data['log_price'].shift(-1) - stk_data['log_price']
     stk_data = create_volume_change_variables(stk_data)
@@ -98,15 +101,16 @@ def create_relative_price_change_linear_regression_model(symbol, endDateTime='',
     lm.fit(X_train, y_train)
 
     if save_model:
-        model_filename = f'model_objects/relative_price_change_linear_model_{symbol}.pkl'
+        model_filename = f'model_objects/relative_price_change_linear_model_{symbol}_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
         with open(model_filename, 'wb') as file:
             pickle.dump(lm, file)
     return lm
 
 
-def create_relative_price_change_random_forest_model(symbol, endDateTime='', save_model=True):
+def create_relative_price_change_random_forest_model(symbol, endDateTime='', save_model=True, barsize="1 Min",
+                                                     duration="2 M"):
     ib = initialize_ib_connection()
-    stk_data = get_stock_data(ib, "XOM", "1 Min", "2 M", directory_offset=2, endDateTime=endDateTime)
+    stk_data = get_stock_data(ib, "XOM", barsize, duration, directory_offset=2, endDateTime=endDateTime)
     stk_data = create_log_price_variables(stk_data)
     stk_data['NextPeriodChangeInLogPrice'] = stk_data['log_price'].shift(-1) - stk_data['log_price']
     stk_data = create_volume_change_variables(stk_data)
@@ -134,10 +138,57 @@ def create_relative_price_change_random_forest_model(symbol, endDateTime='', sav
     forest.fit(x_train, y_train)
 
     if save_model:
-        model_filename = f'model_objects/relative_price_change_random_forest_model_{symbol}.pkl'
+        model_filename = f'model_objects/relative_price_change_random_forest_model_{symbol}_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
         with open(model_filename, 'wb') as file:
             pickle.dump(forest, file)
     return forest
+
+
+def create_relative_price_change_mlp_model(symbol, endDateTime='', save_model=True, barsize="1 Min",
+                                           duration="2 M", data=None):
+    ib = initialize_ib_connection()
+    stk_data = data
+    if data is not None:
+        stk_data = get_stock_data(ib, "XOM", barsize, duration, directory_offset=2, endDateTime=endDateTime)
+    stk_data = create_log_price_variables(stk_data)
+    stk_data['NextPeriodChangeInLogPrice'] = stk_data['log_price'].shift(-1) - stk_data['log_price']
+    stk_data = create_volume_change_variables(stk_data)
+    stk_data = generate_bollinger_bands(stk_data)
+    stk_data = boolean_bollinger_band_location(stk_data)
+
+    always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount', 'Orders',
+                                'Position']
+    extra_columns_to_remove = ['NextPeriodChangeInLogPrice']
+
+    x_columns = list(stk_data.columns)
+    y_column = 'NextPeriodChangeInLogPrice'
+
+    for column in always_redundant_columns + extra_columns_to_remove:
+        x_columns.remove(column)
+
+    data = stk_data.dropna()
+
+    x_train, x_test, y_train, y_test = train_test_split(data[x_columns], data[y_column], test_size=0.2, random_state=42)
+
+    nn_regressor = MLPRegressor(max_iter=1000, random_state=42)
+
+    param_grid = {
+        'hidden_layer_sizes': [(50,), (100,), (50, 50), (100, 50)],
+        'activation': ['relu', 'logistic'],
+        'alpha': [0.0001, 0.001, 0.01],
+    }
+
+    grid_search = GridSearchCV(nn_regressor, param_grid, cv=3, scoring='neg_mean_squared_error')
+
+    grid_search.fit(x_train, y_train)
+
+    best_nn_regressor = grid_search.best_estimator_
+    best_params = grid_search.best_params_
+
+    # Predict using the best neural network model
+    y_pred = best_nn_regressor.predict(x_test)
+
+    pass
 
 
 def analyze_model_performance(model_object, test_data):
@@ -164,7 +215,6 @@ def analyze_model_performance(model_object, test_data):
     predict_price_lm = predict_price_lm.reshape(-1, 1)
     predict_price_lm = pd.DataFrame(predict_price_lm, columns=['Predicted'])
     predict_price_lm.index = y_test.index
-    rmse_lm = np.sqrt(mean_squared_error(predict_price_lm, y_test))
 
     # Conduct further analysis on results data
     results = pd.DataFrame()
@@ -178,8 +228,6 @@ def analyze_model_performance(model_object, test_data):
     results['PriceBelowLowerBB2SD'] = x_test['PriceBelowLowerBB2SD']
     results['PriceBelowLowerBB1SD'] = x_test['PriceBelowLowerBB1SD']
 
-    # FIXME: The model does not always recognize where in the BBbands we are. Redo the condition functions.
-    # Debug here and see what the process actually does
     results['Above_2SD_Correct_Direction'] = results.apply(
         lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x['PriceAboveUpperBB2SD']), axis=1)
     results['Above_1SD_Correct_Direction'] = results.apply(
@@ -200,7 +248,8 @@ def analyze_model_performance(model_object, test_data):
     print(f"Below_2SD_Correct_Direction: {below_two_sd_series.sum() / len(below_two_sd_series)}")
     print(f"Below_1SD_Correct_Direction: {below_one_sd_series.sum() / len(below_one_sd_series)}")
 
-    results.drop(['PriceAboveUpperBB2SD', 'PriceAboveUpperBB1SD', 'PriceBelowLowerBB2SD', 'PriceBelowLowerBB1SD'], axis=1, inplace=True)
+    results.drop(['PriceAboveUpperBB2SD', 'PriceAboveUpperBB1SD', 'PriceBelowLowerBB2SD', 'PriceBelowLowerBB1SD'],
+                 axis=1, inplace=True)
 
     results = pd.concat([results, data], axis=1)
     return results
