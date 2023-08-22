@@ -79,7 +79,7 @@ def ibkr_query_time(month_offset=0):
     return end_date.strftime("%Y%m%d %H:%M:%S")
 
 
-def get_months_of_historical_data(ib, ticker, months=12, barsize='1 min', what_to_show='TRADES',
+def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_to_show='TRADES',
                                   directory_offset=0):
     duration = '1 M'
     contract = Contract()
