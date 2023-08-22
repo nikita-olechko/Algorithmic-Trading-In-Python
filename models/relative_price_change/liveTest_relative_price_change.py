@@ -205,8 +205,12 @@ class ModelAccuracyBot:
             # On Bar Close, after a minute has passed
             if self.generateNewDataFunc is not None:
                 self.minuteDataFrame = self.generateNewDataFunc(self.minuteDataFrame, self.symbol, self.model)
-                self.minuteDataFrame.to_csv(f"liveTest_{self.model}_{self.symbol}.csv")
+                self.minuteDataFrame.to_csv(f"liveTests/liveTest_{self.model}_{self.symbol}.csv")
 
 
-bot1 = ModelAccuracyBot(symbol="XOM", model="relative_price_change",
-                        generateNewDataFunc=generate_model_data)
+# bot1 = ModelAccuracyBot(symbol="XOM", model="relative_price_change",
+#                         generateNewDataFunc=generate_model_data)
+
+for ticker in ["XOM", "AAPL", "MSFT", "TSLA", "AMD", "NVDA", "AMZN", "FB", "GOOG", "NFLX", "INTC", "CSCO", "MU"]:
+    bot = ModelAccuracyBot(symbol=ticker, model=f"relative_price_change_random_forest_{ticker}",
+                            generateNewDataFunc=generate_model_data)
