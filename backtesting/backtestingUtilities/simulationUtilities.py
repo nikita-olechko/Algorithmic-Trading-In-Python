@@ -187,7 +187,7 @@ def get_stock_data(ib, ticker, barsize='1 min', duration='1 M', what_to_show='TR
         try:
             stk_data = pd.read_csv(os.path.join(folder_path, file_name), parse_dates=True, index_col=0)
         except Exception as e:
-            print("An error occurred:", str(e))
+            print("An error occurred retrieving the file:", str(e))
             stk_data = None
     else:
         stk_data = None
