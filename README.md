@@ -25,7 +25,7 @@ As a demonstrative example, the bot is set to use a sample strategy based on the
 - Interactive Brokers (IBKR) account
 - IBKR Trader Workstation (TWS) installed, open, and running on port 4000
 - A subscription to live market data with IBKR (only for live trading / live testing, not required for backtesting)
-- Optional (but recommended): IBKR allows you to open a simulated account with the same data privileges as your real account. This is ideal for testing strategies on live data
+- Optional (but recommended): A simulated trading account. IBKR allows you to open a simulated account with the same data privileges as your real account. This is ideal for testing strategies on live data risk-free.
 
 # Setup and Usage
 
