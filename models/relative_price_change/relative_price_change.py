@@ -158,7 +158,7 @@ def create_relative_price_change_mlp_model(symbol, endDateTime='', save_model=Tr
     return best_nn_regressor
 
 
-def analyze_model_performance(model_object, test_data):
+def analyze_model_performance(model_object, test_data, additional_columns_to_remove=None):
     """
     A function to analyze model performance based on scikit learn model objects.
     """
@@ -169,7 +169,10 @@ def analyze_model_performance(model_object, test_data):
     x_columns = list(test_data.columns)
     y_column = 'NextPeriodChangeInLogPrice'
 
-    for column in always_redundant_columns + extra_columns_to_remove:
+    if additional_columns_to_remove is None:
+        additional_columns_to_remove = []
+
+    for column in always_redundant_columns + extra_columns_to_remove + additional_columns_to_remove:
         x_columns.remove(column)
 
     data = test_data.dropna()
@@ -209,11 +212,12 @@ def analyze_model_performance(model_object, test_data):
     below_two_sd_series = results['Below_2SD_Correct_Direction'].dropna()
     below_one_sd_series = results['Below_1SD_Correct_Direction'].dropna()
 
+    print("\nModel: ", model_object)
     print(f"Overall Correct_Direction: {results['Correct_Direction'].sum() / len(results)}")
     print(f"Above_2SD_Correct_Direction: {above_two_sd_series.sum() / len(above_two_sd_series)}")
     print(f"Above_1SD_Correct_Direction: {above_one_sd_series.sum() / len(above_one_sd_series)}")
     print(f"Below_2SD_Correct_Direction: {below_two_sd_series.sum() / len(below_two_sd_series)}")
-    print(f"Below_1SD_Correct_Direction: {below_one_sd_series.sum() / len(below_one_sd_series)}")
+    print(f"Below_1SD_Correct_Direction: {below_one_sd_series.sum() / len(below_one_sd_series)}\n")
 
     results.drop(['PriceAboveUpperBB2SD', 'PriceAboveUpperBB1SD', 'PriceBelowLowerBB2SD', 'PriceBelowLowerBB1SD'],
                  axis=1, inplace=True)

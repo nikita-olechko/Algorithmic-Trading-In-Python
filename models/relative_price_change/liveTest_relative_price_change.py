@@ -80,7 +80,7 @@ def last_period_change_in_log_price(minuteDataFrame):
     return minuteDataFrame
 
 
-def generate_model_data(minuteDataFrame, symbol, model='relative_price_change'):
+def generate_model_data(minuteDataFrame, symbol, model):
     minuteDataFrame = create_log_price_variables_last_row(minuteDataFrame)
     minuteDataFrame = create_volume_change_variables_last_row(minuteDataFrame)
     minuteDataFrame = generate_bollinger_bands_last_row(minuteDataFrame)
@@ -89,7 +89,7 @@ def generate_model_data(minuteDataFrame, symbol, model='relative_price_change'):
     minuteDataFrame.at[minuteDataFrame.index[-1], 'PredictedPriceChange'] = 0
     always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'BarCount', 'Orders']
     additional_non_model_columns = ['ActualPriceChange', 'PredictedPriceChange']
-    model_filename = f'model_objects/{model}_{symbol}.pkl'
+    model_filename = f'model_objects/{model}.pkl'
     x_columns = list(minuteDataFrame.columns)
     for column in always_redundant_columns + additional_non_model_columns:
         x_columns.remove(column)
@@ -211,6 +211,11 @@ class ModelAccuracyBot:
 # bot1 = ModelAccuracyBot(symbol="XOM", model="relative_price_change",
 #                         generateNewDataFunc=generate_model_data)
 
-for ticker in ["XOM", "AAPL", "MSFT", "TSLA", "AMD", "NVDA", "AMZN", "FB", "GOOG", "NFLX", "INTC", "CSCO", "MU"]:
-    bot = ModelAccuracyBot(symbol=ticker, model=f"relative_price_change_random_forest_{ticker}",
+for ticker in ["XOM", "NVDA", "AMD"]:
+    bot = ModelAccuracyBot(symbol=ticker, model=f"relative_price_change_linear_model_{ticker}_5mins_12M",
                             generateNewDataFunc=generate_model_data)
+    bot2 = ModelAccuracyBot(symbol=ticker, model=f"relative_price_change_random_forest_model_{ticker}_5mins_12M",
+                            generateNewDataFunc=generate_model_data)
+    bot3 = ModelAccuracyBot(symbol=ticker, model=f"relative_price_change_mlp_model_{ticker}_5mins_12M",
+                            generateNewDataFunc=generate_model_data)
+
