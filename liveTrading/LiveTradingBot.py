@@ -128,12 +128,7 @@ class Bot:
 
     # Retrieve any open orders
     def get_open_orders(self):
-        # Request all open orders
         self.ib.reqAllOpenOrders()
-
-        # Wait for a short while to allow the request to be processed
-        time.sleep(1)
-
         return self.ib.openOrders
 
     def place_orders(self, order_bracket, contract, oca=False):
