@@ -88,7 +88,7 @@ def ibkr_query_time_days(day_offset=0):
 
 
 def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_to_show='TRADES',
-                                  directory_offset=0):
+                                  directory_offset=0, months_offset=0):
     duration = '1 M'
     contract = Contract()
     contract.symbol = ticker
@@ -97,7 +97,7 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
     contract.currency = 'USD'
     contract.primaryExchange = 'NYSE'
     ticker = contract.symbol
-    file_name = create_historical_data_file_name(ticker, barsize, duration=f"{months}M", endDateTime=ibkr_query_time_months(0))
+    file_name = create_historical_data_file_name(ticker, barsize, duration=f"{months}M", endDateTime=ibkr_query_time_months(0+months_offset))
 
     # Get the current working directory
     current_directory = os.getcwd()
@@ -116,7 +116,7 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
     else:
         stk_data = pd.DataFrame()
         for month in range(months + 1):
-            endDateTime = ibkr_query_time_months(month)
+            endDateTime = ibkr_query_time_months(month+months_offset)
             try:
                 bars = ib.reqHistoricalData(
                     contract,
