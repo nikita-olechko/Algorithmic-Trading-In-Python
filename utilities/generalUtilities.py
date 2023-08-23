@@ -71,10 +71,18 @@ def initialize_ib_connection():
     return ib
 
 
-def ibkr_query_time(month_offset=0):
+def ibkr_query_time_months(month_offset=0):
     today = datetime.datetime.now()
     end_date = datetime.datetime(today.year, today.month, 1) - datetime.timedelta(days=1)
-    end_date -= datetime.timedelta(days=30 * month_offset)  # Subtracting months as days
+    end_date -= datetime.timedelta(days=30 * month_offset)
+
+    return end_date.strftime("%Y%m%d %H:%M:%S")
+
+
+def ibkr_query_time_days(day_offset=0):
+    today = datetime.datetime.now()
+    end_date = datetime.datetime(today.year, today.month, today.day) - datetime.timedelta(days=1)
+    end_date -= datetime.timedelta(days=day_offset)
 
     return end_date.strftime("%Y%m%d %H:%M:%S")
 
@@ -89,7 +97,7 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
     contract.currency = 'USD'
     contract.primaryExchange = 'NYSE'
     ticker = contract.symbol
-    file_name = create_historical_data_file_name(ticker, barsize, duration=f"{months}M", endDateTime=ibkr_query_time(0))
+    file_name = create_historical_data_file_name(ticker, barsize, duration=f"{months}M", endDateTime=ibkr_query_time_months(0))
 
     # Get the current working directory
     current_directory = os.getcwd()
@@ -108,7 +116,7 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
     else:
         stk_data = pd.DataFrame()
         for month in range(months + 1):
-            endDateTime = ibkr_query_time(month)
+            endDateTime = ibkr_query_time_months(month)
             try:
                 bars = ib.reqHistoricalData(
                     contract,
@@ -127,15 +135,19 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
             except Exception as e:
                 print("An error occurred:", str(e))
                 print(f"Month {month} of {months} skipped.")
-        stk_data = stk_data.drop_duplicates()
-        stk_data = stk_data.sort_values(by=['Date'])
-        stk_data = add_analysis_data_to_historical_data(stk_data, ticker)
-        stk_data.to_csv(os.path.join(folder_path, file_name))
-        print("Historical Data Created")
+        try:
+            stk_data = stk_data.drop_duplicates()
+            stk_data = stk_data.sort_values(by=['Date'])
+            stk_data = add_analysis_data_to_historical_data(stk_data, ticker)
+            stk_data.to_csv(os.path.join(folder_path, file_name))
+            print("Historical Data Created")
+        except Exception as e:
+            print("An error occurred:", str(e))
+            print(f"Historical Data for {ticker} NOT Created")
     return stk_data
 
 
-def get_days_of_historical_data(ib, ticker, days=1, barsize='1 Min', what_to_show='TRADES',
+def get_days_of_historical_data(ib, ticker, days=1, barsize='1 secs', what_to_show='TRADES',
                                 directory_offset=0):
     duration = '1 D'
     contract = Contract()
@@ -145,7 +157,7 @@ def get_days_of_historical_data(ib, ticker, days=1, barsize='1 Min', what_to_sho
     contract.currency = 'USD'
     contract.primaryExchange = 'NYSE'
     ticker = contract.symbol
-    file_name = create_historical_data_file_name(ticker, barsize, duration=f"{days}D", endDateTime=ibkr_query_time(0))
+    file_name = create_historical_data_file_name(ticker, barsize, duration=f"{days}D", endDateTime=ibkr_query_time_days(0))
 
     # Get the current working directory
     current_directory = os.getcwd()
@@ -164,7 +176,7 @@ def get_days_of_historical_data(ib, ticker, days=1, barsize='1 Min', what_to_sho
     else:
         stk_data = pd.DataFrame()
         for day in range(days + 1):
-            endDateTime = ibkr_query_time(day)
+            endDateTime = ibkr_query_time_days(day)
             try:
                 bars = ib.reqHistoricalData(
                     contract,

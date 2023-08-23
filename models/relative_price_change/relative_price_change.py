@@ -94,7 +94,7 @@ def prepare_training_data(data, barsize, duration, endDateTime):
     return data, x_columns, y_column
 
 
-def create_relative_price_change_linear_regression_model(symbol, endDateTime='', save_model=True, barsize="1 Min",
+def create_relative_price_change_linear_regression_model(symbol, endDateTime='', save_model=True, barsize="1 min",
                                                          duration="2 M", data=None):
     data, x_columns, y_column = prepare_training_data(data, barsize, duration, endDateTime)
     train = data
@@ -113,7 +113,7 @@ def create_relative_price_change_linear_regression_model(symbol, endDateTime='',
     return lm
 
 
-def create_relative_price_change_random_forest_model(symbol, endDateTime='', save_model=True, barsize="1 Min",
+def create_relative_price_change_random_forest_model(symbol, endDateTime='', save_model=True, barsize="1 min",
                                                      duration="2 M", data=None):
     data, x_columns, y_column = prepare_training_data(data, barsize, duration, endDateTime)
     train = data
@@ -131,7 +131,7 @@ def create_relative_price_change_random_forest_model(symbol, endDateTime='', sav
     return forest
 
 
-def create_relative_price_change_mlp_model(symbol, endDateTime='', save_model=True, barsize="1 Min",
+def create_relative_price_change_mlp_model(symbol, endDateTime='', save_model=True, barsize="1 min",
                                            duration="2 M", data=None):
     data, x_columns, y_column = prepare_training_data(data, barsize, duration, endDateTime)
     x_train, x_test, y_train, y_test = train_test_split(data[x_columns], data[y_column], test_size=0.2, random_state=42)
