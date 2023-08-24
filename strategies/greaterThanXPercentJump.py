@@ -57,7 +57,7 @@ def percentage_price_change_since_last_order(barDataFrame, last_order_index, cur
 
 def log_price_change_strategy(barDataFrame, last_order_index=0, current_index=-1, ticker=None):
     """
-    A strategy that searches for periods where the price has gone down > 1% in 10 minutes
+    A strategy that searches for periods where the price has gone down > 1% in 10 periods
     """
     if barDataFrame["Orders"][last_order_index] == 1:
         if profit_taker(barDataFrame, last_order_index, current_index):
