@@ -55,7 +55,7 @@ def percentage_price_change_since_last_order(barDataFrame, last_order_index, cur
         'Average']) / barDataFrame.loc[barDataFrame.index[current_index], 'Average'] * 100
 
 
-def log_price_change_strategy(barDataFrame, last_order_index=0, current_index=-1, ticker=None):
+def percentage_price_change_strategy(barDataFrame, last_order_index=0, current_index=-1, ticker=None):
     """
     A strategy that searches for periods where the price has gone down > 1% in 10 periods
     """
