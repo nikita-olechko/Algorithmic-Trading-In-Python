@@ -97,18 +97,18 @@ def create_summary_data(stk_data, ticker, summary_df=None):
     max_change_in_position_per_trade = changes_in_position_per_trade.max()
 
     average_position_post_trade_percentage = stk_data['Position'].loc[trade_completed_indices].mean() / \
-                                             stk_data["Average"].iloc[0]
+                                             stk_data["Average"].iloc[0]*100
     sd_position_post_trade_percentage = stk_data['Position'].loc[trade_completed_indices].std() / \
-                                        stk_data["Average"].iloc[0]
+                                        stk_data["Average"].iloc[0]*100
     max_position_post_trade_percentage = stk_data['Position'].loc[trade_completed_indices].max() / \
-                                         stk_data["Average"].iloc[0]
+                                         stk_data["Average"].iloc[0]*100
     min_position_post_trade_percentage = stk_data['Position'].loc[trade_completed_indices].min() / \
-                                         stk_data["Average"].iloc[0]
+                                         stk_data["Average"].iloc[0]*100
 
-    average_change_in_position_per_trade_percentage = changes_in_position_per_trade.mean() / stk_data["Average"].iloc[0]
-    sd_change_in_position_per_trade_percentage = changes_in_position_per_trade.std() / stk_data["Average"].iloc[0]
-    min_change_in_position_per_trade_percentage = changes_in_position_per_trade.min() / stk_data["Average"].iloc[0]
-    max_change_in_position_per_trade_percentage = changes_in_position_per_trade.max() / stk_data["Average"].iloc[0]
+    average_change_in_position_per_trade_percentage = changes_in_position_per_trade.mean() / stk_data["Average"].iloc[0]*100
+    sd_change_in_position_per_trade_percentage = changes_in_position_per_trade.std() / stk_data["Average"].iloc[0]*100
+    min_change_in_position_per_trade_percentage = changes_in_position_per_trade.min() / stk_data["Average"].iloc[0]*100
+    max_change_in_position_per_trade_percentage = changes_in_position_per_trade.max() / stk_data["Average"].iloc[0]*100
 
     final_holding_gross_return = stk_data['holdingGrossReturn'].iloc[-1]
     average_holding_gross_return = stk_data['holdingGrossReturn'].mean()
@@ -118,28 +118,29 @@ def create_summary_data(stk_data, ticker, summary_df=None):
     new_summary = pd.DataFrame({
         'ticker': [ticker],
         'finalPositionAsPercentage': [final_position_percentage_of_price],
-        'AveragePositionAsPercentage': [average_position_post_trade_percentage],
-        'SDPositionAsPercentage': [sd_position_post_trade_percentage],
-        'MaxPositionAsPercentage': [max_position_post_trade_percentage],
-        'MinPositionAsPercentage': [min_position_post_trade_percentage],
+        'AveragePositionPostTradeAsPercentage': [average_position_post_trade_percentage],
+        'SDPositionPostTradeAsPercentage': [sd_position_post_trade_percentage],
+        'MaxPositionPostTradeAsPercentage': [max_position_post_trade_percentage],
+        'MinPositionPostTradeAsPercentage': [min_position_post_trade_percentage],
         'AvgChangeInPositionAsPercentage': [average_change_in_position_per_trade_percentage],
         'SDChangeInPositionAsPercentage': [sd_change_in_position_per_trade_percentage],
         'MinChangeInPositionAsPercentage': [min_change_in_position_per_trade_percentage],
         'MaxChangeInPositionAsPercentage': [max_change_in_position_per_trade_percentage],
         'finalPosition': [final_position],
-        'AveragePosition': [average_position_post_trade],
-        'SDPosition': [sd_position_post_trade],
-        'MaxPosition': [max_position_post_trade],
-        'MinPosition': [min_position_post_trade],
-        'AvgChangeInPosition': [average_change_in_position_per_trade],
-        'SDChangeInPosition': [sd_change_in_position_per_trade],
-        'MinChangeInPosition': [min_change_in_position_per_trade],
-        'MaxChangeInPosition': [max_change_in_position_per_trade],
+        'AveragePositionPostTrade': [average_position_post_trade],
+        'SDPositionPostTrade': [sd_position_post_trade],
+        'MaxPositionPostTrade': [max_position_post_trade],
+        'MinPositionPostTrade': [min_position_post_trade],
+        'AvgChangeInPositionPerTrade': [average_change_in_position_per_trade],
+        'SDChangeInPositionPerTrade': [sd_change_in_position_per_trade],
+        'MinChangeInPositionPerTrade': [min_change_in_position_per_trade],
+        'MaxChangeInPositionPerTrade': [max_change_in_position_per_trade],
         'FinalHoldingGrossReturn': [final_holding_gross_return],
         'AverageHoldingGrossReturn': [average_holding_gross_return],
         'SDHoldingGrossReturn': [sd_holding_gross_return],
         'MinHoldingGrossReturn': [min_holding_gross_return],
-        'MaxHoldingGrossReturn': [max_holding_gross_return]
+        'MaxHoldingGrossReturn': [max_holding_gross_return],
+        'NumberOfTradesComplete': [len(trade_completed_indices)]
     })
 
     if summary_df is not None:
