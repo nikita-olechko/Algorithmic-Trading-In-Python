@@ -114,7 +114,7 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
             print("An error occurred retrieving the file:", str(e))
             stk_data = None
     else:
-        stk_data = pd.DataFrame()
+        stk_data = pd.DataFrame(columns=['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount'])
         for month in range(months):
             endDateTime = ibkr_query_time_months(month+months_offset)
             try:
@@ -130,7 +130,7 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
                 incremental_data.columns = incremental_data.columns.str.title()
                 if len(incremental_data) <= 50:
                     incremental_data = None
-                stk_data = pd.concat([incremental_data, stk_data])
+                stk_data = pd.merge(left=incremental_data, right=stk_data, how='outer')
                 print(f"Month {month} of {months} complete.")
             except Exception as e:
                 print("An error occurred:", str(e))
@@ -175,7 +175,7 @@ def get_days_of_historical_data(ib, ticker, days=1, barsize='1 secs', what_to_sh
             print("An error occurred retrieving the file:", str(e))
             stk_data = None
     else:
-        stk_data = pd.DataFrame()
+        stk_data = pd.DataFrame(columns=['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount'])
         for day in range(days):
             endDateTime = ibkr_query_time_days(day)
             try:
@@ -191,7 +191,7 @@ def get_days_of_historical_data(ib, ticker, days=1, barsize='1 secs', what_to_sh
                 incremental_data.columns = incremental_data.columns.str.title()
                 if len(incremental_data) <= 50:
                     incremental_data = None
-                stk_data = pd.concat([incremental_data, stk_data])
+                stk_data = pd.merge(left=incremental_data, right=stk_data, how='outer')
                 print(f"Day {day} of {days} complete.")
             except Exception as e:
                 print("An error occurred:", str(e))
