@@ -7,6 +7,10 @@ def generate60PeriodSMA(barDataFrame):
     return barDataFrame
 
 
+# Note that the difference between these two functions, is that the backtesting function applies to the whole dataframe,
+# whereas the live trading function only applies to the last row of the dataframe. This is because the live trading
+# function is called every time a new bar is received, whereas the backtesting function is called once for the whole
+# dataframe.
 def generate60PeriodSMA_backtest(barDataFrame):
     barDataFrame['60PeriodSMA'] = barDataFrame['Average'].rolling(60).mean()
     return barDataFrame
