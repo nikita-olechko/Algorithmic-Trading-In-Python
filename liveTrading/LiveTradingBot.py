@@ -30,6 +30,7 @@ sys.path.append(project_path)
 # TODO: Record a video to demo project outside of market hours for interviews
 # TODO: Take into account current position at start of day
 # TODO: Document trading returns (on EOD and on Keyboard interruption OR on loop completion)
+# TODO: Incorporate greaterThanXPercentJump strategy into random forest model strategy
 
 # Class for interactive brokers connection within Bot
 class IBApi(EWrapper, EClient):
