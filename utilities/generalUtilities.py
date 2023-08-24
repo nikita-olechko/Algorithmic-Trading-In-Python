@@ -4,7 +4,7 @@ import pandas as pd
 import datetime
 from ib_insync import IB, util, Contract
 
-from backtesting.backtestingUtilities.simulationUtilities import add_analysis_data_to_historical_data
+# from backtesting.backtestingUtilities.simulationUtilities import add_analysis_data_to_historical_data
 from utilities.__init__ import ROOT_DIRECTORY
 
 
@@ -115,7 +115,7 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
             stk_data = None
     else:
         stk_data = pd.DataFrame()
-        for month in range(months + 1):
+        for month in range(months):
             endDateTime = ibkr_query_time_months(month+months_offset)
             try:
                 bars = ib.reqHistoricalData(
@@ -138,7 +138,8 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
         try:
             stk_data = stk_data.drop_duplicates()
             stk_data = stk_data.sort_values(by=['Date'])
-            stk_data = add_analysis_data_to_historical_data(stk_data, ticker)
+            stk_data["Orders"] = 0
+            stk_data["Position"] = 0
             stk_data.to_csv(os.path.join(folder_path, file_name))
             print("Historical Data Created")
         except Exception as e:
@@ -175,7 +176,7 @@ def get_days_of_historical_data(ib, ticker, days=1, barsize='1 secs', what_to_sh
             stk_data = None
     else:
         stk_data = pd.DataFrame()
-        for day in range(days + 1):
+        for day in range(days):
             endDateTime = ibkr_query_time_days(day)
             try:
                 bars = ib.reqHistoricalData(
@@ -197,7 +198,8 @@ def get_days_of_historical_data(ib, ticker, days=1, barsize='1 secs', what_to_sh
                 print(f"Day {day} of {days} skipped.")
         stk_data = stk_data.drop_duplicates()
         stk_data = stk_data.sort_values(by=['Date'])
-        stk_data = add_analysis_data_to_historical_data(stk_data, ticker)
+        stk_data["Orders"] = 0
+        stk_data["Position"] = 0
         stk_data.to_csv(os.path.join(folder_path, file_name))
         print("Historical Data Created")
     return
