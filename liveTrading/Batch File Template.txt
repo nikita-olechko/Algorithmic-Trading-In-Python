@@ -8,5 +8,5 @@ cd "%project_path%\liveTrading"
 "C:\Users\nikit\AppData\Local\Programs\Python\Python311\python.exe" "liveTradingBot.py"
 pause
 
-:: Save this file as File.bat and run it to run the liveTrading Bot
-:: You can run this file from anywhere, and you can set it to run with the task scheduler
+:: Save this file as File.bat in the liveTrading folder and run it to run the liveTrading Bot
+:: You can set this file to run automatically every morning with the task scheduler for daily trading

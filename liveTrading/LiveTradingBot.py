@@ -1,6 +1,11 @@
 # Imports
 import os
 import sys
+
+# Necessary to run project as a scheduled Batch File, DO NOT DELETE
+project_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(project_path)
+
 from ib_insync import OrderState
 from ibapi.client import EClient
 from ibapi.common import OrderId
@@ -20,10 +25,6 @@ from utilities.generalUtilities import get_starter_order_id, get_tws_connection_
 from liveTrading.liveTradingUtilities import create_stock_contract_object, holding_gross_return, \
     calculate_current_return
 from strategies.greaterthan60barsma import generate60PeriodSMA, sampleSMABuySellStrategy
-
-# Necessary to run project as a scheduled Batch File, DO NOT DELETE
-project_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(project_path)
 
 
 # TODO: Set up IBController to Run TWS Automatically (including Login and shutdown)
