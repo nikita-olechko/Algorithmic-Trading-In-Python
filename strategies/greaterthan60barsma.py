@@ -3,6 +3,9 @@
 # the average price of the last 60 bars, and sells when the opposite is true.
 
 def generate60PeriodSMA(barDataFrame):
+    """
+    A function that generates the 60 period simple moving average for the last row.
+    """
     barDataFrame.loc[barDataFrame.index[-1], '60PeriodSMA'] = barDataFrame['Average'].tail(60).mean()
     return barDataFrame
 
@@ -12,6 +15,9 @@ def generate60PeriodSMA(barDataFrame):
 # function is called every time a new bar is received, whereas the backtesting function is called once for the whole
 # dataframe.
 def generate60PeriodSMA_backtest(barDataFrame):
+    """
+    A function that generates the 60 period simple moving average for the entire dataframe.
+    """
     barDataFrame['60PeriodSMA'] = barDataFrame['Average'].rolling(60).mean()
     return barDataFrame
 
