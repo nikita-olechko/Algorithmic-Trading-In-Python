@@ -1,19 +1,26 @@
+import pickle
+
 import numpy as np
 import pandas as pd
 from sklearn import (
     linear_model
 )
-import pickle
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.neural_network import MLPRegressor
+
 from backtesting.backtestingUtilities.simulationUtilities import get_stock_data
 from utilities.generalUtilities import initialize_ib_connection
 
-from sklearn.neural_network import MLPRegressor
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.metrics import mean_squared_error
-
 
 def create_log_price_variables(stk_data, list_of_periods=range(1, 11)):
+    """
+    Create log price and related variables for a given DataFrame.
+
+    :param stk_data: DataFrame containing stock data.
+    :param list_of_periods: List of periods to calculate shifted log prices.
+    :return: Modified DataFrame with log price variables.
+    """
     log_price = np.log(stk_data["Average"])
     stk_data["log_price"] = log_price
     for period in list_of_periods:
@@ -24,6 +31,13 @@ def create_log_price_variables(stk_data, list_of_periods=range(1, 11)):
 
 
 def create_volume_change_variables(stk_data, list_of_periods=range(1, 11)):
+    """
+    Create log volume and related variables for a given DataFrame.
+
+    :param stk_data: DataFrame containing stock data.
+    :param list_of_periods: List of periods to calculate shifted log volumes.
+    :return: Modified DataFrame with log volume variables.
+    """
     log_volume = np.log(stk_data["Volume"])
     stk_data["log_volume"] = log_volume
     for period in list_of_periods:
@@ -34,6 +48,13 @@ def create_volume_change_variables(stk_data, list_of_periods=range(1, 11)):
 
 
 def generate_bollinger_bands(dataFrame, period=20):
+    """
+    Generate Bollinger Bands based on moving averages and standard deviations.
+
+    :param dataFrame: DataFrame containing stock data.
+    :param period: Period for calculating moving averages and standard deviations.
+    :return: DataFrame with Bollinger Bands columns added.
+    """
     # Calculate the moving average and standard deviation over the last 'period' rows
     dataFrame['MA_20'] = dataFrame['Average'].rolling(window=period).mean()
     dataFrame['SD_20'] = dataFrame['Average'].rolling(window=period).std()
@@ -48,6 +69,12 @@ def generate_bollinger_bands(dataFrame, period=20):
 
 
 def boolean_bollinger_band_location(minuteDataFrame):
+    """
+    Determine whether prices are above or below Bollinger Bands.
+
+    :param minuteDataFrame: DataFrame containing stock data.
+    :return: DataFrame with Boolean columns indicating Bollinger Bands positions.
+    """
     minuteDataFrame['PriceAboveUpperBB2SD'] = np.where(minuteDataFrame['Average'] > minuteDataFrame['UpperBB2SD'], 1, 0)
     minuteDataFrame['PriceAboveUpperBB1SD'] = np.where(
         (minuteDataFrame['Average'] > minuteDataFrame['UpperBB1SD']) & (minuteDataFrame['PriceAboveUpperBB2SD'] == 0),
@@ -60,6 +87,14 @@ def boolean_bollinger_band_location(minuteDataFrame):
 
 
 def SD_correct_direction(actual, predicted, condition_series):
+    """
+    Determine if the price change and prediction have the same direction based on a condition.
+
+    :param actual: Actual price change.
+    :param predicted: Predicted price change.
+    :param condition_series: Condition series indicating a specific situation.
+    :return: 1 if directions match, 0 if they do not, or NaN if not applicable.
+    """
     if condition_series == 1:
         if actual * predicted >= 0:
             return 1
@@ -70,6 +105,15 @@ def SD_correct_direction(actual, predicted, condition_series):
 
 
 def prepare_training_data(data, barsize, duration, endDateTime):
+    """
+    Prepare training data for machine learning models.
+
+    :param data: DataFrame containing stock data.
+    :param barsize: Bar size for historical data.
+    :param duration: Duration of historical data.
+    :param endDateTime: End date and time for the data.
+    :return: Processed data, feature columns, and target column.
+    """
     ib = initialize_ib_connection()
     stk_data = data
     if data is None:
@@ -96,6 +140,17 @@ def prepare_training_data(data, barsize, duration, endDateTime):
 
 def create_relative_price_change_linear_regression_model(symbol, endDateTime='', save_model=True, barsize="1 min",
                                                          duration="2 M", data=None):
+    """
+    Create a linear regression model for predicting relative price changes.
+
+    :param symbol: Ticker symbol of the stock.
+    :param endDateTime: End date and time for the data formatted as YYYYMMDD HH:MM:SS.
+    :param save_model: Whether to save the trained model.
+    :param barsize: Bar size for historical data.
+    :param duration: Duration of historical data.
+    :param data: DataFrame containing stock data.
+    :return: Trained linear regression model.
+    """
     data, x_columns, y_column = prepare_training_data(data, barsize, duration, endDateTime)
     train = data
 
@@ -115,6 +170,17 @@ def create_relative_price_change_linear_regression_model(symbol, endDateTime='',
 
 def create_relative_price_change_random_forest_model(symbol, endDateTime='', save_model=True, barsize="1 min",
                                                      duration="2 M", data=None):
+    """
+    Create a random forest model for predicting relative price changes.
+
+    :param symbol: Ticker symbol of the stock.
+    :param endDateTime: End date and time for the data.
+    :param save_model: Whether to save the trained model.
+    :param barsize: Bar size for historical data.
+    :param duration: Duration of historical data.
+    :param data: DataFrame containing stock data.
+    :return: Trained random forest model.
+    """
     data, x_columns, y_column = prepare_training_data(data, barsize, duration, endDateTime)
     train = data
 
@@ -133,6 +199,17 @@ def create_relative_price_change_random_forest_model(symbol, endDateTime='', sav
 
 def create_relative_price_change_mlp_model(symbol, endDateTime='', save_model=True, barsize="1 min",
                                            duration="2 M", data=None):
+    """
+    Create a multi-layer perceptron (MLP) model for predicting relative price changes.
+
+    :param symbol: Ticker symbol of the stock.
+    :param endDateTime: End date and time for the data.
+    :param save_model: Whether to save the trained model.
+    :param barsize: Bar size for historical data.
+    :param duration: Duration of historical data.
+    :param data: DataFrame containing stock data.
+    :return: Trained MLP model.
+    """
     data, x_columns, y_column = prepare_training_data(data, barsize, duration, endDateTime)
     x_train, x_test, y_train, y_test = train_test_split(data[x_columns], data[y_column], test_size=0.2, random_state=42)
 
@@ -160,7 +237,12 @@ def create_relative_price_change_mlp_model(symbol, endDateTime='', save_model=Tr
 
 def analyze_model_performance(model_object, test_data, additional_columns_to_remove=None):
     """
-    A function to analyze model performance based on scikit learn model objects.
+    Analyze the performance of a predictive model.
+
+    :param model_object: Trained predictive model.
+    :param test_data: DataFrame containing test data.
+    :param additional_columns_to_remove: Additional columns to remove from analysis.
+    :return: DataFrame with analysis results.
     """
     always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount', 'Orders',
                                 'Position']
