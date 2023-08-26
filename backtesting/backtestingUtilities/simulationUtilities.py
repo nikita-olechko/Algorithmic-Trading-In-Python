@@ -10,9 +10,13 @@ def run_strategy_on_list_of_tickers(ib, strategy, strategy_buy_or_sell_condition
                                     generate_additional_data_function=None,
                                     barsize="1 day", duration="3 Y", what_to_show="TRADES", list_of_tickers=None,
                                     initializing_order=1,
-                                    directory_offset=1, months_offset=0, very_large_data=False, *args, **kwargs):
+                                    directory_offset=1, months_offset=0, very_large_data=False,
+                                    ticker_limit=None, try_errored_tickers=False,
+                                    *args, **kwargs):
     if list_of_tickers is None:
         list_of_tickers = pd.read_csv("../backtesting/nyse-listed.csv")['ACT Symbol']
+        if ticker_limit is not None:
+            list_of_tickers = list_of_tickers[:ticker_limit]
     try:
         erred_tickers = pd.read_csv("../backtesting/data/ErroredTickers/ErroredTickers.csv", header=None,
                                     names=['Ticker'])
@@ -27,8 +31,11 @@ def run_strategy_on_list_of_tickers(ib, strategy, strategy_buy_or_sell_condition
         all_tickers_summary = pd.DataFrame()
 
     completed_tickers = all_tickers_summary['ticker'].unique() if 'ticker' in all_tickers_summary.columns else []
-    list_of_tickers = [ticker for ticker in list_of_tickers if
-                       ticker not in completed_tickers and ticker not in erred_tickers['Ticker'].values]
+    if not try_errored_tickers:
+        list_of_tickers = [ticker for ticker in list_of_tickers if
+                           ticker not in completed_tickers and ticker not in erred_tickers['Ticker'].values]
+    else:
+        list_of_tickers = [ticker for ticker in list_of_tickers if ticker not in completed_tickers]
 
     for ticker in list_of_tickers:
         gc.collect()
@@ -100,18 +107,21 @@ def create_summary_data(stk_data, ticker, summary_df=None):
     max_change_in_position_per_trade = changes_in_position_per_trade.max()
 
     average_position_post_trade_percentage = stk_data['Position'].loc[trade_completed_indices].mean() / \
-                                             stk_data["Average"].iloc[0]*100
+                                             stk_data["Average"].iloc[0] * 100
     sd_position_post_trade_percentage = stk_data['Position'].loc[trade_completed_indices].std() / \
-                                        stk_data["Average"].iloc[0]*100
+                                        stk_data["Average"].iloc[0] * 100
     max_position_post_trade_percentage = stk_data['Position'].loc[trade_completed_indices].max() / \
-                                         stk_data["Average"].iloc[0]*100
+                                         stk_data["Average"].iloc[0] * 100
     min_position_post_trade_percentage = stk_data['Position'].loc[trade_completed_indices].min() / \
-                                         stk_data["Average"].iloc[0]*100
+                                         stk_data["Average"].iloc[0] * 100
 
-    average_change_in_position_per_trade_percentage = changes_in_position_per_trade.mean() / stk_data["Average"].iloc[0]*100
-    sd_change_in_position_per_trade_percentage = changes_in_position_per_trade.std() / stk_data["Average"].iloc[0]*100
-    min_change_in_position_per_trade_percentage = changes_in_position_per_trade.min() / stk_data["Average"].iloc[0]*100
-    max_change_in_position_per_trade_percentage = changes_in_position_per_trade.max() / stk_data["Average"].iloc[0]*100
+    average_change_in_position_per_trade_percentage = changes_in_position_per_trade.mean() / stk_data["Average"].iloc[
+        0] * 100
+    sd_change_in_position_per_trade_percentage = changes_in_position_per_trade.std() / stk_data["Average"].iloc[0] * 100
+    min_change_in_position_per_trade_percentage = changes_in_position_per_trade.min() / stk_data["Average"].iloc[
+        0] * 100
+    max_change_in_position_per_trade_percentage = changes_in_position_per_trade.max() / stk_data["Average"].iloc[
+        0] * 100
 
     final_holding_gross_return = stk_data['holdingGrossReturn'].iloc[-1]
     average_holding_gross_return = stk_data['holdingGrossReturn'].mean()
@@ -161,7 +171,7 @@ def retrieve_base_data(ib, ticker, barsize="1 day", duration="3 Y", what_to_show
                                                  )
     else:
         stk_data = get_stock_data(ib, ticker, barsize=barsize, duration=duration, what_to_show=what_to_show,
-                              directory_offset=directory_offset, endDateTime=endDateTime)
+                                  directory_offset=directory_offset, endDateTime=endDateTime)
     # fix, should not work atm as cannot find the file
     if stk_data is None:
         csv_file_path = "../backtesting/data/ErroredTickers/ErroredTickers.csv"

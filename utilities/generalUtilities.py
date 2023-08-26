@@ -60,10 +60,10 @@ def get_tws_connection_id(n=[]):
     return int(time + str(len(n)))
 
 
-def initialize_ib_connection():
+def initialize_ib_connection(port=4000):
     ib = IB()
     try:
-        ib.connect('127.0.0.1', 4000, clientId=get_tws_connection_id())
+        ib.connect('127.0.0.1', port, clientId=get_tws_connection_id())
         print("Connected to IBKR")
     except Exception as e:
         print(e)
@@ -97,7 +97,8 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
     contract.currency = 'USD'
     contract.primaryExchange = 'NYSE'
     ticker = contract.symbol
-    file_name = create_historical_data_file_name(ticker, barsize, duration=f"{months}M", endDateTime=ibkr_query_time_months(0+months_offset))
+    file_name = create_historical_data_file_name(ticker, barsize, duration=f"{months}M",
+                                                 endDateTime=ibkr_query_time_months(0 + months_offset))
 
     # Get the current working directory
     current_directory = os.getcwd()
@@ -116,7 +117,7 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
     else:
         stk_data = pd.DataFrame(columns=['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount'])
         for month in range(months):
-            endDateTime = ibkr_query_time_months(month+months_offset)
+            endDateTime = ibkr_query_time_months(month + months_offset)
             try:
                 bars = ib.reqHistoricalData(
                     contract,
@@ -145,6 +146,8 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
         except Exception as e:
             print("An error occurred:", str(e))
             print(f"Historical Data for {ticker} NOT Created")
+    if len(stk_data) <= 50:
+        stk_data = None
     return stk_data
 
 
@@ -158,7 +161,8 @@ def get_days_of_historical_data(ib, ticker, days=1, barsize='1 secs', what_to_sh
     contract.currency = 'USD'
     contract.primaryExchange = 'NYSE'
     ticker = contract.symbol
-    file_name = create_historical_data_file_name(ticker, barsize, duration=f"{days}D", endDateTime=ibkr_query_time_days(0))
+    file_name = create_historical_data_file_name(ticker, barsize, duration=f"{days}D",
+                                                 endDateTime=ibkr_query_time_days(0))
 
     # Get the current working directory
     current_directory = os.getcwd()
@@ -202,4 +206,6 @@ def get_days_of_historical_data(ib, ticker, days=1, barsize='1 secs', what_to_sh
         stk_data["Position"] = 0
         stk_data.to_csv(os.path.join(folder_path, file_name))
         print("Historical Data Created")
-    return
+    if len(stk_data) <= 50:
+        stk_data = None
+    return stk_data
