@@ -9,6 +9,14 @@ from utilities.__init__ import ROOT_DIRECTORY
 
 
 def retrieve_stored_historical_data(ticker, barsize="1 day", duration="1 Y"):
+    """
+    Retrieve stored historical data for a given ticker.
+
+    :param ticker: Ticker symbol of the stock.
+    :param barsize: The size of each bar (e.g., "1 min", "1 hour").
+    :param duration: The duration of historical data to retrieve (e.g., "1 Y", "6 M").
+    :return: Pandas DataFrame containing historical data.
+    """
     print("entered getStockData")
     file_name = create_historical_data_file_name(ticker, barsize, duration)
     folder_path = ROOT_DIRECTORY + "\\data\\Historical Data\\"
@@ -26,6 +34,15 @@ def retrieve_stored_historical_data(ticker, barsize="1 day", duration="1 Y"):
 
 
 def create_historical_data_file_name(ticker, barsize, duration, endDateTime=''):
+    """
+    Create a standardized file name for historical data.
+
+    :param ticker: Ticker symbol of the stock.
+    :param barsize: The size of each bar (e.g., "1 min", "1 hour").
+    :param duration: The duration of historical data (e.g., "1 Y", "6 M").
+    :param endDateTime: End date and time for the data.
+    :return: Formatted filename for the historical data file.
+    """
     file_ticker = str.replace(ticker, " ", "")
     file_bar_size = str.replace(barsize, " ", "")
     file_duration = str.replace(duration, " ", "")
@@ -35,6 +52,13 @@ def create_historical_data_file_name(ticker, barsize, duration, endDateTime=''):
 
 def file_exists_in_folder(filename,
                           folderPath):
+    """
+    Check if a file exists in a specified folder.
+
+    :param filename: Name of the file.
+    :param folderPath: Path of the folder to check.
+    :return: True if the file exists, False otherwise.
+    """
     file_path = os.path.join(folderPath, filename)
     if os.path.exists(file_path):
         print(filename, " exists")
@@ -89,6 +113,18 @@ def ibkr_query_time_days(day_offset=0):
 
 def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_to_show='TRADES',
                                   directory_offset=0, months_offset=0):
+    """
+    Retrieve historical data for a given number of months.
+
+    :param ib: IB connection object.
+    :param ticker: Ticker symbol of the stock.
+    :param months: Number of months of historical data to retrieve.
+    :param barsize: The size of each bar (e.g., "1 min", "1 hour").
+    :param what_to_show: Type of data to retrieve (e.g., 'TRADES', 'BID_ASK').
+    :param directory_offset: Offset to adjust the directory path.
+    :param months_offset: Offset for adjusting the query start date.
+    :return: Pandas DataFrame containing historical data.
+    """
     duration = '1 M'
     contract = Contract()
     contract.symbol = ticker
@@ -153,6 +189,17 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
 
 def get_days_of_historical_data(ib, ticker, days=1, barsize='1 secs', what_to_show='TRADES',
                                 directory_offset=0):
+    """
+    Retrieve historical data for a given number of days.
+
+    :param ib: IB connection object.
+    :param ticker: Ticker symbol of the stock.
+    :param days: Number of days of historical data to retrieve.
+    :param barsize: The size of each bar (e.g., "1 sec", "1 min").
+    :param what_to_show: Type of data to retrieve (e.g., 'TRADES', 'BID_ASK').
+    :param directory_offset: Offset to adjust the directory path.
+    :return: Pandas DataFrame containing historical data.
+    """
     duration = '1 D'
     contract = Contract()
     contract.symbol = ticker
