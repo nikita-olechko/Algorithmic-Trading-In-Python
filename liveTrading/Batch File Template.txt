@@ -1,7 +1,12 @@
 @echo off
-set "project_path=C:\Users\nikit\OneDrive - BCIT\R Projects\Cleaning Up Automated Trading"
+:: Set this to the root directory of where your project is located
+set "project_path=C:\Users\nikit\OneDrive\Personal Projects\Algorithmic Trading\Algorithmic-Trading-In-Python"
 
 cd "%project_path%\liveTrading"
 
+:: Set this to the path of your Python installation
 "C:\Users\nikit\AppData\Local\Programs\Python\Python311\python.exe" "liveTradingBot.py"
 pause
+
+:: Save this file as File.bat and run it to run the liveTrading Bot
+:: You can run this file from anywhere, and you can set it to run with the task scheduler
