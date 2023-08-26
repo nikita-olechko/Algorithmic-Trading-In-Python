@@ -30,6 +30,7 @@ sys.path.append(project_path)
 # TODO: Record a video to demo project outside of market hours for interviews
 # TODO: Take into account current position at start of day
 # TODO: Document trading returns (on EOD and on Keyboard interruption OR on loop completion)
+# TODO: Incorporate greaterThanXPercentJump strategy into random forest model strategy
 
 # Class for interactive brokers connection within Bot
 class IBApi(EWrapper, EClient):
@@ -128,12 +129,7 @@ class Bot:
 
     # Retrieve any open orders
     def get_open_orders(self):
-        # Request all open orders
         self.ib.reqAllOpenOrders()
-
-        # Wait for a short while to allow the request to be processed
-        time.sleep(1)
-
         return self.ib.openOrders
 
     def place_orders(self, order_bracket, contract, oca=False):
