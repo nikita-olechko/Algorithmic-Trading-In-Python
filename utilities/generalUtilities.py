@@ -67,15 +67,22 @@ def file_exists_in_folder(filename,
         return False
 
 
+def seconds_since_start_of_day():
+    now = datetime.datetime.now()
+    midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    seconds = (now - midnight).seconds
+    return seconds
+
+
 def get_time_of_day_as_string():
     now = datetime.datetime.now()
     return now.strftime("%H%M%S")
 
 
 def get_starter_order_id(n=[]):
-    time = get_time_of_day_as_string()
+    time = str(seconds_since_start_of_day())
     n.append(1)
-    return int(time + str(len(n) * 1000000))
+    return int(time + str(len(n) * 1000))
 
 
 def get_tws_connection_id(n=[]):
