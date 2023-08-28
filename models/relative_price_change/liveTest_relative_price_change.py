@@ -17,6 +17,7 @@ import time
 
 from utilities.dataGenerationUtilities import average_bars_by_minute
 from utilities.generalUtilities import get_tws_connection_id, get_starter_order_id
+from utilities.ibkrUtilities import IBApi
 
 
 def create_log_price_variables_last_row(stk_data, list_of_periods=range(1, 11)):
@@ -99,52 +100,6 @@ def generate_model_data(minuteDataFrame, symbol, model):
     minuteDataFrame.at[minuteDataFrame.index[-1], 'PredictedPriceChange'] = predicted_price
     return minuteDataFrame
 
-
-class IBApiModelTests(EWrapper, EClient):
-    def __init__(self, bot):
-        EClient.__init__(self, self)
-        self.bot = bot
-        self.openOrders = []
-
-    def openOrder(self, orderId: OrderId, contract: Contract, order: Order, orderState: OrderState):
-        self.openOrders.append((orderId, contract, order))
-
-    def openOrderEnd(self):
-        print("Received all open orders")
-
-    def historicalData(self, reqId, bar):
-        try:
-            self.bot.on_bar_update(reqId, bar, False)
-        except Exception as e:
-            print(e)
-
-    def historicalDataUpdate(self, reqId, bar):
-        try:
-            self.bot.on_bar_update(reqId, bar, True)
-        except Exception as e:
-            print(e)
-
-    # On historical data end
-    def historicalDataEnd(self, reqId, start, end):
-        print("End of Historical Data\n\n")
-
-    # Get next Order ID
-    def nextValidId(self, nextOrderId: int):
-        order_id = nextOrderId
-        return order_id
-
-    # Request Option Chain function
-    def reqOptionChain(self, reqId, symbol):
-        self.reqSecDefOptParams(reqId, symbol, "", "STK", 0)
-
-    # Handle output of option chain
-    def secDefOptParams(self, reqId, exchange, underlyingConId, underlyingSymbol, futFopExchange, underlyingSecType,
-                        multiplier, expirations, strikes):
-        print("Exchange:", exchange, "Underlying conId:", underlyingConId, "Symbol:", underlyingSymbol,
-              "FUT-FOP exchange:", futFopExchange, "Underlying secType:", underlyingSecType,
-              "Multiplier:", multiplier, "Expirations:", expirations, "Strikes:", strikes)
-
-
 class ModelAccuracyBot:
     ib = None
     reqId = 0
@@ -154,7 +109,7 @@ class ModelAccuracyBot:
         # Connect to IB on init
         twsConnectionID = get_tws_connection_id()
         orderIDStarter = get_starter_order_id()
-        self.ib = IBApiModelTests(self)
+        self.ib = IBApi(self)
         self.ib.connect("127.0.0.1", 4000, twsConnectionID)
         # Listen to socket on another thread
         while not self.ib.isConnected():
