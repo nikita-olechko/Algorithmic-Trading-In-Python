@@ -24,7 +24,7 @@ from utilities.dataGenerationUtilities import average_bars_by_minute
 from utilities.generalUtilities import get_starter_order_id, get_tws_connection_id
 from liveTrading.liveTradingUtilities import create_stock_contract_object, holding_gross_return, \
     calculate_current_return
-from strategies.greaterthan60barsma import generate60PeriodSMA, sampleSMABuySellStrategy
+from strategies.greaterthan60barsma import generate60PeriodSMALastRow, sampleSMABuySellStrategy, generate60PeriodSMAWholeDataFrame
 
 
 # TODO: Set up IBController to Run TWS Automatically (including Login and shutdown)
@@ -85,7 +85,8 @@ class Bot:
     reqId = 0
     initialbartime = datetime.now().astimezone(pytz.timezone("America/New_York"))
 
-    def __init__(self, symbol, buySellConditionFunc, quantity=1, generateNewDataFunc=None):
+    def __init__(self, symbol, buySellConditionFunc, quantity=1, generateNewDataFunc=None, last_row_only=False,
+                 periods_to_analyze=50, operate_on_minute_data=False):
         # Connect to IB on init
         twsConnectionID = get_tws_connection_id()
         orderIDStarter = get_starter_order_id()
@@ -102,6 +103,9 @@ class Bot:
         self.buySellConditionFunc = buySellConditionFunc
         self.generateNewDataFunc = generateNewDataFunc
         self.quantity = quantity
+        self.last_row_only = last_row_only
+        self.periods_to_analyze = periods_to_analyze
+        self.operate_on_minute_data = operate_on_minute_data
         self.last_order_index = 0
         self.completedOrders = 0
         self.orderId = orderIDStarter
@@ -186,25 +190,35 @@ class Bot:
                    "HoldingGrossReturn": holding_gross_return(self.barDataFrame, bar.average),
                    "Current_Return": calculate_current_return(self.barDataFrame, bar.average, self.last_order_index)}
         self.barDataFrame.loc[len(self.barDataFrame)] = bar_row
-        # self.bars.append(bar)
-        if realtime:
-            # self.ib.reqOptionChain(self.reqId, self.symbol)
+        if not realtime:
             print("New Bar Received: ", self.symbol)
             print(bar_row)
-            bartime = datetime.strptime(bar.date, "%Y%m%d %H:%M:%S").astimezone(pytz.timezone("America/New_York"))
-            minutes_diff = (bartime - self.initialbartime).total_seconds() / 60.0
-            # On Bar Close, after a minute has passed
-            if minutes_diff > 0 and math.floor(minutes_diff) % int(self.barsize.split()[0]) == 0:
+
+            # Switch to bar by bar instead of minute by minute if reqested
+            if self.operate_on_minute_data:
                 self.minuteDataFrame = average_bars_by_minute(self.barDataFrame, self.minuteDataFrame)
+            else:
+                self.minuteDataFrame = self.barDataFrame.copy()
+
+            # Switch to calculate only the last row if higher performance is requested
+            if self.last_row_only:
                 if self.generateNewDataFunc is not None:
-                    self.barDataFrame = self.generateNewDataFunc(self.barDataFrame)
-                self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] = self.buySellConditionFunc(
-                    self.barDataFrame, self.last_order_index, self.symbol)
-                self.place_orders_if_needed()
+                    self.minuteDataFrame = self.generateNewDataFunc(self.minuteDataFrame)
+
+            # Otherwise, calculate new data for a slice of the dataframe and concatenate together
+            else:
+                if self.generateNewDataFunc is not None:
+                    last_periods = self.minuteDataFrame.tail(self.periods_to_analyze).copy()
+                    last_periods = self.generateNewDataFunc(last_periods)
+                    last_row = last_periods.iloc[-1]
+                    self.minuteDataFrame = self.minuteDataFrame.iloc[:-1]
+                    self.minuteDataFrame = pd.concat([self.minuteDataFrame, pd.DataFrame([last_row])],
+                                                     ignore_index=False)
+            self.minuteDataFrame.at[len(self.minuteDataFrame) - 1, "Orders"] = self.buySellConditionFunc(
+                self.minuteDataFrame, self.last_order_index, self.symbol)
+            self.place_orders_if_needed()
 
 
 # Start Bot(s)
-bot1 = Bot(symbol="XOM", quantity=1, buySellConditionFunc=sampleSMABuySellStrategy,
-           generateNewDataFunc=generate60PeriodSMA)
-bot2 = Bot(symbol="XOM", quantity=2, buySellConditionFunc=sampleSMABuySellStrategy,
-           generateNewDataFunc=generate60PeriodSMA)
+bot1 = Bot(symbol="AAPL", quantity=1, buySellConditionFunc=sampleSMABuySellStrategy,
+           generateNewDataFunc=generate60PeriodSMAWholeDataFrame)
