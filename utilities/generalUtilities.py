@@ -175,7 +175,7 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
                 if len(incremental_data) <= 50:
                     incremental_data = None
                 stk_data = pd.merge(left=incremental_data, right=stk_data, how='outer')
-                print(f"Month {month} of {months} complete.")
+                print(f"Month {month+1} of {months} complete.")
             except Exception as e:
                 print("An error occurred:", str(e))
                 print(f"Month {month+1} of {months} skipped.")
