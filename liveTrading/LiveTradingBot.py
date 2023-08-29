@@ -190,3 +190,5 @@ class Bot:
             self.minuteDataFrame.at[len(self.minuteDataFrame) - 1, "Orders"] = self.buySellConditionFunc(
                 self.minuteDataFrame, self.last_order_index, self.symbol)
             self.place_orders_if_needed()
+        else:
+            self.minuteDataFrame = self.barDataFrame
