@@ -163,7 +163,7 @@ class Bot:
                    "HoldingGrossReturn": holding_gross_return(self.barDataFrame, bar.average),
                    "Current_Return": calculate_current_return(self.barDataFrame, bar.average, self.last_order_index)}
         self.barDataFrame.loc[len(self.barDataFrame)] = bar_row
-        if not realtime:
+        if realtime:
             print("New Bar Received: ", self.symbol)
             print(bar_row)
 
