@@ -43,7 +43,7 @@ class Bot:
         :param generateNewDataFunc: A function that generates additional data for analysis.
         :type generateNewDataFunc: callable, optional
 
-        :param last_row_only: Whether to operate on the last row only for higher performance.
+        :param last_row_only: Whether to operate on the last row only for higher performance. Default is False.
         :type last_row_only: bool, optional
 
         :param periods_to_analyze: The number of periods to analyze when generating new data or making trading decisions.
