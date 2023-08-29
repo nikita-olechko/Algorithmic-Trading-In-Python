@@ -138,7 +138,7 @@ def simulate_trading_on_strategy(stk_data, ticker, strategy_buy_or_sell_conditio
 
 
 def create_summary_data(stk_data, ticker, summary_df=None):
-    stk_data['holdingGrossReturn'] = stk_data["Average"] / stk_data["Average"].iloc[0]
+    stk_data['holdingNetReturn'] = stk_data["Average"] / stk_data["Average"].iloc[0]
 
     trade_completed_indices = stk_data.loc[stk_data['Orders'] == -1].index
     final_position = stk_data['Position'].iloc[-1]
@@ -173,11 +173,11 @@ def create_summary_data(stk_data, ticker, summary_df=None):
     max_change_in_position_per_trade_percentage = changes_in_position_per_trade.max() / stk_data["Average"].iloc[
         0] * 100
 
-    final_holding_gross_return = stk_data['holdingGrossReturn'].iloc[-1]
-    average_holding_gross_return = stk_data['holdingGrossReturn'].mean()
-    sd_holding_gross_return = stk_data['holdingGrossReturn'].std()
-    min_holding_gross_return = stk_data['holdingGrossReturn'].min()
-    max_holding_gross_return = stk_data['holdingGrossReturn'].max()
+    final_holding_net_return = stk_data['holdingNetReturn'].iloc[-1]
+    average_holding_net_return = stk_data['holdingNetReturn'].mean()
+    sd_holding_net_return = stk_data['holdingNetReturn'].std()
+    min_holding_net_return = stk_data['holdingNetReturn'].min()
+    max_holding_net_return = stk_data['holdingNetReturn'].max()
     new_summary = pd.DataFrame({
         'ticker': [ticker],
         'finalPositionAsPercentage': [final_position_percentage_of_price],
@@ -198,11 +198,11 @@ def create_summary_data(stk_data, ticker, summary_df=None):
         'SDChangeInPositionPerTrade': [sd_change_in_position_per_trade],
         'MinChangeInPositionPerTrade': [min_change_in_position_per_trade],
         'MaxChangeInPositionPerTrade': [max_change_in_position_per_trade],
-        'FinalHoldingGrossReturn': [final_holding_gross_return],
-        'AverageHoldingGrossReturn': [average_holding_gross_return],
-        'SDHoldingGrossReturn': [sd_holding_gross_return],
-        'MinHoldingGrossReturn': [min_holding_gross_return],
-        'MaxHoldingGrossReturn': [max_holding_gross_return],
+        'FinalHoldingNetReturn': [final_holding_net_return],
+        'AverageHoldingNetReturn': [average_holding_net_return],
+        'SDHoldingNetReturn': [sd_holding_net_return],
+        'MinHoldingNetReturn': [min_holding_net_return],
+        'MaxHoldingNetReturn': [max_holding_net_return],
         'NumberOfTradesComplete': [len(trade_completed_indices)]
     })
 
