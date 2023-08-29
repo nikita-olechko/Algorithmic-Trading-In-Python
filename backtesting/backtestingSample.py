@@ -8,5 +8,6 @@ generate_additional_data_function = generate10PeriodSMAWholeDataFrame
 run_strategy_on_list_of_tickers(strategy_name,
                                 strategy_buy_or_sell_condition_function=strategy_buy_or_sell_condition_function,
                                 generate_additional_data_function=generate_additional_data_function,
-                                barsize="1 min", duration="1 M", list_of_tickers=["AAPL", "MSFT", "AMZN"], very_large_data=False
+                                barsize="1 min", duration="1 M", list_of_tickers=["AAPL", "MSFT", "AMZN"],
+                                very_large_data=False, try_errored_tickers=True
                                 )

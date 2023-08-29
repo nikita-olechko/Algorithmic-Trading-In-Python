@@ -117,7 +117,7 @@ def simulate_trading_on_strategy(stk_data, ticker, strategy_buy_or_sell_conditio
         if row.isna().any():
             continue
         # Get order based on strategy conditions
-        order = strategy_buy_or_sell_condition_function(stk_data, ticker=ticker, current_index=index,
+        order = strategy_buy_or_sell_condition_function(stk_data[:index], ticker=ticker, current_index=index,
                                                         last_order_index=last_order_index, *args, **kwargs)
 
         # If this is the first order, wait until first Buy order to establish the position
@@ -260,7 +260,7 @@ def get_stock_data(ib, ticker, barsize='1 min', duration='1 M', what_to_show='TR
     if os.path.isfile(os.path.join(folder_path, file_name)):
         try:
             stk_data = pd.read_csv(os.path.join(folder_path, file_name), parse_dates=True, index_col=0,
-                                   date_parser=DATE_FORMAT)
+                                   date_format=DATE_FORMAT)
         except Exception as e:
             print("An error occurred retrieving the file:", str(e))
             stk_data = None
