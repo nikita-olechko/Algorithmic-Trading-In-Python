@@ -143,17 +143,21 @@ class Bot:
         from createOrderColumnLatestOrder to support advanced order routing in the future (e.g. conditional
         bracket orders). Any type of order can be added for future functionality (e.g., bracket and limit orders)
         """
-        if self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] == 1:
+        if self.operate_on_minute_data:
+            data_frame = self.minuteDataFrame
+        else:
+            data_frame = self.barDataFrame
+        if data_frame.at[len(data_frame) - 1, "Orders"] == 1:
             contract = create_stock_contract_object(self.symbol)
             market_buy_order = marketBuyOrder(self.orderId, quantity=self.quantity)
             self.place_orders(market_buy_order, contract)
-            self.last_order_index = len(self.barDataFrame) - 1
+            self.last_order_index = len(data_frame) - 1
 
-        if self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] == -1:
+        if data_frame.at[len(data_frame) - 1, "Orders"] == -1:
             contract = create_stock_contract_object(self.symbol)
             market_sell_order = marketSellOrder(self.orderId, quantity=self.quantity)
             self.place_orders(market_sell_order, contract)
-            self.last_order_index = len(self.barDataFrame) - 1
+            self.last_order_index = len(data_frame) - 1
 
     # Pass realtimebar data to our bot object
     def on_bar_update(self, reqId, bar, realtime):
