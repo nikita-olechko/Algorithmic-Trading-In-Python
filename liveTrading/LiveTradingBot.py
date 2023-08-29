@@ -58,7 +58,7 @@ class Bot:
     def __init__(self, symbol: str, buySellConditionFunc: callable, quantity: int = 1,
                  generateNewDataFunc: callable = None,
                  last_row_only: bool = False,
-                 periods_to_analyze: int = 50, operate_on_minute_data: bool = True):
+                 periods_to_analyze: int = 50):
         # Connect to IB on init
         twsConnectionID = get_tws_connection_id()
         orderIDStarter = get_starter_order_id()
@@ -77,7 +77,6 @@ class Bot:
         self.quantity = quantity
         self.last_row_only = last_row_only
         self.periods_to_analyze = periods_to_analyze
-        self.operate_on_minute_data = operate_on_minute_data
         self.last_order_index = 0
         self.completedOrders = 0
         self.orderId = orderIDStarter
@@ -142,18 +141,17 @@ class Bot:
         from createOrderColumnLatestOrder to support advanced order routing in the future (e.g. conditional
         bracket orders). Any type of order can be added for future functionality (e.g., bracket and limit orders)
         """
-        data_frame = self.minuteDataFrame
-        if data_frame.at[len(data_frame) - 1, "Orders"] == 1:
+        if self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] == 1:
             contract = create_stock_contract_object(self.symbol)
             market_buy_order = marketBuyOrder(self.orderId, quantity=self.quantity)
             self.place_orders(market_buy_order, contract)
-            self.last_order_index = len(data_frame) - 1
+            self.last_order_index = len(self.barDataFrame) - 1
 
-        if data_frame.at[len(data_frame) - 1, "Orders"] == -1:
+        if self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] == -1:
             contract = create_stock_contract_object(self.symbol)
             market_sell_order = marketSellOrder(self.orderId, quantity=self.quantity)
             self.place_orders(market_sell_order, contract)
-            self.last_order_index = len(data_frame) - 1
+            self.last_order_index = len(self.barDataFrame) - 1
 
     # Pass realtimebar data to our bot object
     def on_bar_update(self, reqId, bar, realtime):
@@ -166,29 +164,35 @@ class Bot:
         if realtime:
             print("New Bar Received: ", self.symbol)
             print(bar_row)
-
-            # Switch to bar by bar instead of minute by minute if reqested
-            if self.operate_on_minute_data:
-                self.minuteDataFrame = average_bars_by_minute(self.barDataFrame, self.minuteDataFrame)
-            else:
-                self.minuteDataFrame = self.barDataFrame.copy()
-
-            # Switch to calculate only the last row if higher performance is requested
-            if self.last_row_only:
-                if self.generateNewDataFunc is not None:
-                    self.minuteDataFrame = self.generateNewDataFunc(self.minuteDataFrame)
-
-            # Otherwise, calculate new data for a slice of the dataframe and concatenate together
-            else:
-                if self.generateNewDataFunc is not None:
-                    last_periods = self.minuteDataFrame.tail(self.periods_to_analyze).copy()
-                    last_periods = self.generateNewDataFunc(last_periods)
-                    last_row = last_periods.iloc[-1]
-                    self.minuteDataFrame = self.minuteDataFrame.iloc[:-1]
-                    self.minuteDataFrame = pd.concat([self.minuteDataFrame, pd.DataFrame([last_row])],
-                                                     ignore_index=False)
-            self.minuteDataFrame.at[len(self.minuteDataFrame) - 1, "Orders"] = self.buySellConditionFunc(
-                self.minuteDataFrame, self.last_order_index, self.symbol)
+            self.minuteDataFrame = average_bars_by_minute(self.barDataFrame, self.minuteDataFrame)
+            if self.generateNewDataFunc is not None:
+                self.barDataFrame = self.generateNewDataFunc(self.barDataFrame)
+            self.barDataFrame.at[len(self.barDataFrame) - 1, "Orders"] = self.buySellConditionFunc(
+                self.barDataFrame, self.last_order_index, self.symbol)
             self.place_orders_if_needed()
-        else:
-            self.minuteDataFrame = self.barDataFrame
+
+        #     # Switch to bar by bar instead of minute by minute if reqested
+        #     if self.operate_on_minute_data:
+        #         self.minuteDataFrame = average_bars_by_minute(self.barDataFrame, self.minuteDataFrame)
+        #     else:
+        #         self.minuteDataFrame = self.barDataFrame.copy()
+        # 
+        #     # Switch to calculate only the last row if higher performance is requested
+        #     if self.last_row_only:
+        #         if self.generateNewDataFunc is not None:
+        #             self.minuteDataFrame = self.generateNewDataFunc(self.minuteDataFrame)
+        # 
+        #     # Otherwise, calculate new data for a slice of the dataframe and concatenate together
+        #     else:
+        #         if self.generateNewDataFunc is not None:
+        #             last_periods = self.minuteDataFrame.tail(self.periods_to_analyze).copy()
+        #             last_periods = self.generateNewDataFunc(last_periods)
+        #             last_row = last_periods.iloc[-1]
+        #             self.minuteDataFrame = self.minuteDataFrame.iloc[:-1]
+        #             self.minuteDataFrame = pd.concat([self.minuteDataFrame, pd.DataFrame([last_row])],
+        #                                              ignore_index=False)
+        #     self.minuteDataFrame.at[len(self.minuteDataFrame) - 1, "Orders"] = self.buySellConditionFunc(
+        #         self.minuteDataFrame, self.last_order_index, self.symbol)
+        #     self.place_orders_if_needed()
+        # else:
+        #     self.minuteDataFrame = self.barDataFrame

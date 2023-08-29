@@ -7,4 +7,4 @@ for ticker in ["XOM"]:
 
     bot = Bot(symbol=ticker, quantity=1, buySellConditionFunc=sampleSMABuySellStrategy,
               generateNewDataFunc=generate10PeriodSMAWholeDataFrame,
-              last_row_only=False, periods_to_analyze=15, operate_on_minute_data=True)
+              last_row_only=False, periods_to_analyze=15)
