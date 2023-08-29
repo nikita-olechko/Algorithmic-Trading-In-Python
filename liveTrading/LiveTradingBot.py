@@ -143,10 +143,7 @@ class Bot:
         from createOrderColumnLatestOrder to support advanced order routing in the future (e.g. conditional
         bracket orders). Any type of order can be added for future functionality (e.g., bracket and limit orders)
         """
-        if self.operate_on_minute_data:
-            data_frame = self.minuteDataFrame
-        else:
-            data_frame = self.barDataFrame
+        data_frame = self.minuteDataFrame
         if data_frame.at[len(data_frame) - 1, "Orders"] == 1:
             contract = create_stock_contract_object(self.symbol)
             market_buy_order = marketBuyOrder(self.orderId, quantity=self.quantity)
