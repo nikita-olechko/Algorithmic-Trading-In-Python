@@ -256,7 +256,8 @@ def get_stock_data(ib, ticker, barsize='1 min', duration='1 M', what_to_show='TR
     # If the data already exists, retrieve it
     if os.path.isfile(os.path.join(folder_path, file_name)):
         try:
-            stk_data = pd.read_csv(os.path.join(folder_path, file_name), parse_dates=True, index_col=0)
+            stk_data = pd.read_csv(os.path.join(folder_path, file_name), parse_dates=True, index_col=0,
+                                   infer_datetime_format=True)
         except Exception as e:
             print("An error occurred retrieving the file:", str(e))
             stk_data = None

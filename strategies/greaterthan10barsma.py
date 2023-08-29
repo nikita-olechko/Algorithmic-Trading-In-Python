@@ -23,13 +23,15 @@ def sampleSMABuySellStrategy(barDataFrame, last_order_index=0, ticker="", curren
     A function that returns 1 (buy), -1 (sell), 2 (hold), or 0 (nothing) depending on some condition, in
     this case Average > 10Period SMA, BUY, and vice versa
     """
-    if barDataFrame.loc[barDataFrame.index[-1], 'Average'] < barDataFrame.loc[barDataFrame.index[-1], '10PeriodSMA']:
+    current_price = barDataFrame.loc[barDataFrame.index[-1], 'Average']
+    current_sma = barDataFrame.loc[barDataFrame.index[-1], '10PeriodSMA']
+
+    if current_price < current_sma:
         if barDataFrame["Orders"][last_order_index] != 1:
             return 1
         else:
             return 2
-    elif barDataFrame.loc[barDataFrame.index[-1], 'Average'] >= \
-            barDataFrame.loc[barDataFrame.index[-1], '10PeriodSMA']:
+    elif current_price >= current_sma:
         # Note: checking whether last_order_index != 0 ensures that we do not sell as our first order,
         # this can be changed for accounts that support short selling
         if barDataFrame["Orders"][last_order_index] != -1 and last_order_index != 0:
