@@ -21,7 +21,6 @@ from utilities.dataGenerationUtilities import average_bars_by_minute
 from utilities.generalUtilities import get_starter_order_id, get_tws_connection_id
 from liveTrading.liveTradingUtilities import create_stock_contract_object, holding_gross_return, \
     calculate_current_return
-from strategies.greaterthan60barsma import sampleSMABuySellStrategy, generate60PeriodSMAWholeDataFrame
 
 
 # Bot Logic
