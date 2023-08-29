@@ -29,15 +29,45 @@ from strategies.greaterthan60barsma import sampleSMABuySellStrategy, generate60P
 # TODO: Take into account current position at start of day
 # TODO: Document trading returns (on EOD and on Keyboard interruption OR on loop completion)
 # TODO: Incorporate greaterThanXPercentJump strategy into random forest model strategy
+# TODO: Document bot parameters
+
 
 # Bot Logic
 class Bot:
+    """
+        A trading bot that interacts with the Interactive Brokers (IB) trading platform to execute buy and sell orders.
+
+        :param symbol: The trading symbol (stock symbol) for the financial instrument that the bot will trade.
+        :type symbol: str
+
+        :param buySellConditionFunc: A function defining the conditions for placing buy or sell orders.
+            This function takes the bar data, last order index, and symbol as parameters and returns a signal for placing an order
+            (1 for buy, -1 for sell, 2 for hold, or 0 for no action).
+        :type buySellConditionFunc: callable
+
+        :param quantity: The quantity of shares to be traded in each order. Default is 1.
+        :type quantity: int, optional
+
+        :param generateNewDataFunc: A function that generates additional data for analysis.
+        :type generateNewDataFunc: callable, optional
+
+        :param last_row_only: Whether to operate on the last row only for higher performance.
+        :type last_row_only: bool, optional
+
+        :param periods_to_analyze: The number of periods to analyze when generating new data or making trading decisions.
+        :type periods_to_analyze: int, only used if last_row_only is False
+
+        :param operate_on_minute_data: Whether to operate on minute data or not. Default is True.
+        :type operate_on_minute_data: bool, optional
+        """
     ib = None
     reqId = 0
     initialbartime = datetime.now().astimezone(pytz.timezone("America/New_York"))
 
-    def __init__(self, symbol, buySellConditionFunc, quantity=1, generateNewDataFunc=None, last_row_only=False,
-                 periods_to_analyze=50, operate_on_minute_data=False):
+    def __init__(self, symbol: str, buySellConditionFunc: callable, quantity: int = 1,
+                 generateNewDataFunc: callable = None,
+                 last_row_only: bool = False,
+                 periods_to_analyze: int = 50, operate_on_minute_data: bool = True):
         # Connect to IB on init
         twsConnectionID = get_tws_connection_id()
         orderIDStarter = get_starter_order_id()
