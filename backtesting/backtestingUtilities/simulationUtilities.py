@@ -13,6 +13,54 @@ def run_strategy_on_list_of_tickers(strategy, strategy_buy_or_sell_condition_fun
                                     directory_offset=1, months_offset=0, very_large_data=False,
                                     ticker_limit=None, try_errored_tickers=False,
                                     *args, **kwargs):
+    """
+        Run a trading strategy on a list of tickers using historical data.
+
+        :param ib: An instance of the IB API used for data retrieval.
+        :type ib: IBApi
+
+        :param strategy: The name of the trading strategy being applied.
+        :type strategy: str
+
+        :param strategy_buy_or_sell_condition_function: A function defining the conditions for placing buy or sell orders.
+        :type strategy_buy_or_sell_condition_function: callable
+
+        :param generate_additional_data_function: A function that generates additional data for analysis. (optional)
+        :type generate_additional_data_function: callable, optional
+
+        :param barsize: The time interval for bars in the historical data. Default is "1 day".
+        :type barsize: str
+
+        :param duration: The duration of historical data to retrieve. Default is "3 Y" (3 years).
+        :type duration: str
+
+        :param what_to_show: The data type to show in the historical data. Default is "TRADES".
+        :type what_to_show: str
+
+        :param list_of_tickers: A list of tickers to run the strategy on. If None, reads tickers from a CSV file.
+        :type list_of_tickers: list or None
+
+        :param initializing_order: The value indicating the order type to use for initializing the first position. Default is 1 (buy).
+        :type initializing_order: int
+
+        :param directory_offset: The offset for the data directory. Default is 1.
+        :type directory_offset: int
+
+        :param months_offset: The offset for the duration in months. Default is 0.
+        :type months_offset: int
+
+        :param very_large_data: Whether to retrieve very large historical data. Default is False.
+        :type very_large_data: bool
+
+        :param ticker_limit: The limit on the number of tickers to process. Default is None (no limit).
+        :type ticker_limit: int or None
+
+        :param try_errored_tickers: Whether to try processing tickers that previously encountered errors. Default is False.
+        :type try_errored_tickers: bool
+
+        :param args: Additional positional arguments passed to strategy functions.
+        :param kwargs: Additional keyword arguments passed to strategy functions.
+    """
     ib = initialize_ib_connection()
 
     if list_of_tickers is None:
