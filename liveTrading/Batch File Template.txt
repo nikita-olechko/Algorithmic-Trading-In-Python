@@ -5,7 +5,7 @@ set "project_path=C:\Users\nikit\OneDrive\Personal Projects\Algorithmic Trading\
 cd "%project_path%\liveTrading"
 
 :: Set this to the path of your Python installation
-"C:\Users\nikit\AppData\Local\Programs\Python\Python311\python.exe" "liveTradingBot.py"
+"C:\Users\nikit\AppData\Local\Programs\Python\Python311\python.exe" "RunTradingBot.py"
 pause
 
 :: Save this file as File.bat in the liveTrading folder and run it to run the liveTrading Bot

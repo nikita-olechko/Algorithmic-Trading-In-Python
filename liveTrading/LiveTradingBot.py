@@ -190,8 +190,3 @@ class Bot:
             self.minuteDataFrame.at[len(self.minuteDataFrame) - 1, "Orders"] = self.buySellConditionFunc(
                 self.minuteDataFrame, self.last_order_index, self.symbol)
             self.place_orders_if_needed()
-
-
-# Start Bot(s)
-bot1 = Bot(symbol="AAPL", quantity=1, buySellConditionFunc=sampleSMABuySellStrategy,
-           generateNewDataFunc=generate60PeriodSMAWholeDataFrame)
