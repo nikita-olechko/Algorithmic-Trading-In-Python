@@ -3,6 +3,7 @@ import os
 import gc
 from ib_insync import util, Contract
 
+from utilities import DATE_FORMAT
 from utilities.generalUtilities import get_months_of_historical_data, initialize_ib_connection, custom_date_parser
 
 
@@ -258,7 +259,7 @@ def get_stock_data(ib, ticker, barsize='1 min', duration='1 M', what_to_show='TR
     if os.path.isfile(os.path.join(folder_path, file_name)):
         try:
             stk_data = pd.read_csv(os.path.join(folder_path, file_name), parse_dates=True, index_col=0,
-                                   date_parser=custom_date_parser)
+                                   date_parser=DATE_FORMAT)
         except Exception as e:
             print("An error occurred retrieving the file:", str(e))
             stk_data = None

@@ -9,3 +9,4 @@ def get_root_directory_as_path():
 
 
 ROOT_DIRECTORY = get_root_directory_as_path()
+DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
