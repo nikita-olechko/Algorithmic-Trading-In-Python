@@ -28,7 +28,7 @@ def sampleSMABuySellStrategy(barDataFrame, last_order_index=0, ticker="", curren
 
     # if current_price < current_sma:
     if True:
-        if barDataFrame["Orders"][last_order_index] != 1 and barDataFrame["Orders"][last_order_index] != 2:
+        if barDataFrame["Orders"][last_order_index] != 1:
             return 1
         else:
             return 2
