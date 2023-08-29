@@ -24,14 +24,6 @@ from liveTrading.liveTradingUtilities import create_stock_contract_object, holdi
 from strategies.greaterthan60barsma import sampleSMABuySellStrategy, generate60PeriodSMAWholeDataFrame
 
 
-# TODO: Set up IBController to Run TWS Automatically (including Login and shutdown)
-# TODO: Record a video to demo project outside of market hours for interviews
-# TODO: Take into account current position at start of day
-# TODO: Document trading returns (on EOD and on Keyboard interruption OR on loop completion)
-# TODO: Incorporate greaterThanXPercentJump strategy into random forest model strategy
-# TODO: Document bot parameters
-
-
 # Bot Logic
 class Bot:
     """
