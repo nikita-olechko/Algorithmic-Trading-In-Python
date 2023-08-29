@@ -3,7 +3,7 @@ import os
 import gc
 from ib_insync import util, Contract
 
-from utilities.generalUtilities import get_months_of_historical_data, initialize_ib_connection
+from utilities.generalUtilities import get_months_of_historical_data, initialize_ib_connection, custom_date_parser
 
 
 def run_strategy_on_list_of_tickers(strategy, strategy_buy_or_sell_condition_function,
@@ -254,10 +254,11 @@ def get_stock_data(ib, ticker, barsize='1 min', duration='1 M', what_to_show='TR
     folder_path = os.path.join(new_directory, "backtesting/data", "Historical Data")
 
     # If the data already exists, retrieve it
+    date_format = '%Y-%m-%d %H:%M:%S'
     if os.path.isfile(os.path.join(folder_path, file_name)):
         try:
             stk_data = pd.read_csv(os.path.join(folder_path, file_name), parse_dates=True, index_col=0,
-                                   infer_datetime_format=True)
+                                   date_parser=custom_date_parser)
         except Exception as e:
             print("An error occurred retrieving the file:", str(e))
             stk_data = None

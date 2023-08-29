@@ -67,6 +67,10 @@ def file_exists_in_folder(filename,
         return False
 
 
+def custom_date_parser(date_string):
+    return pd.to_datetime(date_string, format='%Y-%m-%d %H:%M:%S')
+
+
 def seconds_since_start_of_day():
     now = datetime.datetime.now()
     midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
