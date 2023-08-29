@@ -3,8 +3,8 @@ import os
 import gc
 from ib_insync import util, Contract
 
-from utilities import DATE_FORMAT
-from utilities.generalUtilities import get_months_of_historical_data, initialize_ib_connection, custom_date_parser
+from utilities.__init__ import DATE_FORMAT
+from utilities.generalUtilities import get_months_of_historical_data, initialize_ib_connection
 
 
 def run_strategy_on_list_of_tickers(strategy, strategy_buy_or_sell_condition_function,
@@ -102,6 +102,7 @@ def run_strategy_on_list_of_tickers(strategy, strategy_buy_or_sell_condition_fun
             all_tickers_summary = pd.concat([all_tickers_summary, summary_df])
             all_tickers_summary.to_csv(summary_file_path_name, index=False)
             print(f"Completed {ticker}")
+    print("Completed all tickers")
 
 
 def simulate_trading_on_strategy(stk_data, ticker, strategy_buy_or_sell_condition_function,

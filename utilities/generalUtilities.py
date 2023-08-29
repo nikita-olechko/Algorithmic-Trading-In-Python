@@ -5,7 +5,7 @@ import datetime
 from ib_insync import IB, util, Contract
 
 # from backtesting.backtestingUtilities.simulationUtilities import add_analysis_data_to_historical_data
-from utilities.__init__ import ROOT_DIRECTORY
+from utilities.__init__ import ROOT_DIRECTORY, DATE_FORMAT
 
 
 def retrieve_stored_historical_data(ticker, barsize="1 day", duration="1 Y"):
@@ -152,7 +152,8 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
     # If the data already exists, retrieve it
     if os.path.isfile(os.path.join(folder_path, file_name)):
         try:
-            stk_data = pd.read_csv(os.path.join(folder_path, file_name), parse_dates=True, index_col=0)
+            stk_data = pd.read_csv(os.path.join(folder_path, file_name), parse_dates=True, index_col=0,
+                                   date_format=DATE_FORMAT)
         except Exception as e:
             print("An error occurred retrieving the file:", str(e))
             stk_data = None
@@ -227,7 +228,7 @@ def get_days_of_historical_data(ib, ticker, days=1, barsize='1 secs', what_to_sh
     # If the data already exists, retrieve it
     if os.path.isfile(os.path.join(folder_path, file_name)):
         try:
-            stk_data = pd.read_csv(os.path.join(folder_path, file_name), parse_dates=True, index_col=0)
+            stk_data = pd.read_csv(os.path.join(folder_path, file_name), parse_dates=True, index_col=0, date_format=DATE_FORMAT)
         except Exception as e:
             print("An error occurred retrieving the file:", str(e))
             stk_data = None
