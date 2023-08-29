@@ -3,16 +3,18 @@ import os
 import gc
 from ib_insync import util, Contract
 
-from utilities.generalUtilities import get_months_of_historical_data
+from utilities.generalUtilities import get_months_of_historical_data, initialize_ib_connection
 
 
-def run_strategy_on_list_of_tickers(ib, strategy, strategy_buy_or_sell_condition_function,
+def run_strategy_on_list_of_tickers(strategy, strategy_buy_or_sell_condition_function,
                                     generate_additional_data_function=None,
                                     barsize="1 day", duration="3 Y", what_to_show="TRADES", list_of_tickers=None,
                                     initializing_order=1,
                                     directory_offset=1, months_offset=0, very_large_data=False,
                                     ticker_limit=None, try_errored_tickers=False,
                                     *args, **kwargs):
+    ib = initialize_ib_connection()
+
     if list_of_tickers is None:
         list_of_tickers = pd.read_csv("../backtesting/nyse-listed.csv")['ACT Symbol']
         if ticker_limit is not None:
