@@ -1,9 +1,9 @@
 from backtestingUtilities.simulationUtilities import run_strategy_on_list_of_tickers
-from strategies.greaterthan60barsma import sampleSMABuySellStrategy, generate60PeriodSMAWholeDataFrame
+from strategies.greaterthan10barsma import sampleSMABuySellStrategy, generate10PeriodSMAWholeDataFrame
 
-strategy_name = '60PeriodSMA_Test'
+strategy_name = '10PeriodSMA_Test'
 strategy_buy_or_sell_condition_function = sampleSMABuySellStrategy
-generate_additional_data_function = generate60PeriodSMAWholeDataFrame
+generate_additional_data_function = generate10PeriodSMAWholeDataFrame
 
 run_strategy_on_list_of_tickers(strategy_name,
                                 strategy_buy_or_sell_condition_function=strategy_buy_or_sell_condition_function,
