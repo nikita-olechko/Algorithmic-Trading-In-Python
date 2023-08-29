@@ -178,7 +178,7 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
                 print(f"Month {month} of {months} complete.")
             except Exception as e:
                 print("An error occurred:", str(e))
-                print(f"Month {month} of {months} skipped.")
+                print(f"Month {month+1} of {months} skipped.")
         try:
             stk_data = stk_data.drop_duplicates()
             stk_data = stk_data.sort_values(by=['Date'])

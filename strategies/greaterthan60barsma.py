@@ -14,11 +14,11 @@ def generate60PeriodSMAWholeDataFrame(barDataFrame):
     """
     A function that generates the 60 period simple moving average for the entire dataframe.
     """
-    barDataFrame['60PeriodSMA'] = barDataFrame['Average'].rolling(5).mean()
+    barDataFrame['60PeriodSMA'] = barDataFrame['Average'].rolling(60).mean()
     return barDataFrame
 
 
-def sampleSMABuySellStrategy(barDataFrame, last_order_index=0, ticker=""):
+def sampleSMABuySellStrategy(barDataFrame, last_order_index=0, ticker="", current_index=0):
     """
     A function that returns 1 (buy), -1 (sell), 2 (hold), or 0 (nothing) depending on some condition, in
     this case Average > 60Period SMA, BUY, and vice versa
