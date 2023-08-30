@@ -2,7 +2,7 @@
 
 This project allows users to build, test, and trade custom algorithmic trading strategies based on any parameters. It features a Live Trading bot with real-time data connection, a system to backtest your strategy on historical market data, and a basic framework for building and testing predictive models on market data.
 
-As a demonstrative example, the bot is set to use a sample strategy based on the 60-period Simple Moving Average (SMA). 
+As a demonstrative example, the bot is set to use a sample strategy based on the 10-period Simple Moving Average (SMA). 
 
 ***Please note that this strategy is for testing purposes only and not recommended for live trading.***
 
@@ -16,7 +16,7 @@ As a demonstrative example, the bot is set to use a sample strategy based on the
 - Supports limit and stop-loss orders as well as market orders
 - Supports customized backtesting on historical data
 - Can manage multiple trading bots running different strategies simultaneously
-- Sample testing strategy based on 60-period SMA
+- Sample testing strategy based on 10-period SMA
 - Easy integration of Machine Learning / Deep Learning models to live trading strategies
 
 # Demo
@@ -50,35 +50,35 @@ There is also a batch file template to run the bot automatically on a daily basi
 
 # Customizing Strategies
 
-You can customize the trading bot by modifying the strategy functions buySellConditionFunc and generateNewDataFunc in the Bot instantiation. These functions respectively determine the buy/sell decisions and new data generation for each trading bot.
+You can customize the trading bot by modifying the strategy functions buySellConditionFunc and generateNewDataFunc in the Bot instantiation. These functions respectively determine the buy/sell decisions and new data generation for each trading bot. **Make sure your customized functions accept the same parameters as below**
 
-For example, in the testing strategy greaterthan60barsma.py, there are two functions:
+For example, in the testing strategy greaterthan10barsma.py, there are two functions:
 
-- generate60PeriodSMA(barDataFrame): 
+- generate10PeriodSMA(barDataFrame): 
     This function generates new data based on existing bar data. 
-    In this case, it calculates the 60-period SMA.
+    In this case, it calculates the 10-period SMA.
 
-- sampleSMABuySellStrategy(barDataFrame): 
+- sampleSMABuySellStrategy(barDataFrame, last_order_index=0, ticker="", current_index=0): 
     This function defines the strategy's decision-making process. 
-    It returns 1 (BUY), -1 (SELL), 2 (HOLD), or 0 (no action), based on whether the average price is above or below the 60-period SMA.
+    It returns 1 (BUY), -1 (SELL), 2 (HOLD), or 0 (no action), based on whether the average price is above or below the 10-period SMA.
     No action occurs at 2 or 0, but it is helpful for analysis purposes to differentiate the two.
 
-At the moment, the bot can only trade a fixed quantity of the asset. For example, if you specify 100, and the ticker "AAPL", the bot will place orders for 100 shares of AAPL according to your strategy. In this example, it will BUY 100 shares if above the 60-period SMA, and SELL if below the 60-period SMA. 
+At the moment, the bot can only trade a fixed quantity of the asset. For example, if you specify 100, and the ticker "AAPL", the bot will place orders for 100 shares of AAPL according to your strategy. In this example, it will BUY 100 shares if above the 10-period SMA, and SELL if below the 10-period SMA. 
 
-Orders do NOT stack. Meaning if your strategy places a BUY order, it will not place another BUY order unti a SELL order has been placed, even if the BUY condition has been met. This corresponds with the fixed quantity capacity of the current model. However, this is built into the strategy, not the bot class itself, as it is designed to be flexible (e.g., maybe you want to double up under specific circumstances). You can check the last order using barDataFrame["Orders"][last_order_index] and build accordingly.
+Orders in the sample strategy do NOT stack. Meaning if your strategy places a BUY order, it will not place another BUY order unti a SELL order has been placed, even if the BUY condition has been met. This corresponds with the fixed quantity capacity of the current model. However, this is built into the strategy, not the bot class itself, as it is designed to be flexible (e.g., maybe you want to double up under specific circumstances). You can check the last order using barDataFrame["Orders"][last_order_index] and build accordingly.
 
 You can create a new strategy by writing similar functions that align with your trading approach. Of course, any data generated in the first function can and should be used in the second. 
 
 # Simulatenously Running Strategies
 
-To run several strategies simulatenously, you can simply instantiate multiple instances of the Bot class, which will run the strategies simulatenously without interference. I would recommend running them in a seaparate console if you wish to see live updates, otherwise things get very confusing very fast. 
+To run several strategies simulatenously, you can simply instantiate multiple instances of the Bot class, which will run the strategies simulatenously without interference. I would recommend running them in a seaparate console if you wish to see live updates, otherwise updates get confusing. 
 
 # Backtesting
 
 Backtesting is now available in Python! Here are the steps to backtest a strategy:
 
 - Step 0: Create your strategy condition functions in the same way as you would for live trading. See the section above on Customizing Strategies for more details.
-- Step 1: Assuming you are generating new data, you MUST modify your data generation function to operate on the entire dataframe instead of only the last row. This is because the backtesting framework requires the entire dataframe to be generated at once. For example, if you are calculating the 60-period SMA, you must calculate the 60-period SMA for the entire dataframe, not just the last row. See the sample strategy greaterthan60barsma.py for an example of how to do this.
+- Step 1: Assuming you are generating new data, you MUST modify your data generation function to operate on the entire dataframe instead of only the last row. This is because the backtesting framework requires the entire dataframe to be generated at once. For example, if you are calculating the 10-period SMA, you must calculate the 10-period SMA for the entire dataframe, not just the last row. See the sample strategy greaterthan10barsma.py for an example of how to do this.
 - Step 2: Make sure IBKR TWS is open and running on port 4000.
 - Step 3: Open backtesting.py and import your strategy functions like so:
     
