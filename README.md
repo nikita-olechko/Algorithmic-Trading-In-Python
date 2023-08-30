@@ -19,6 +19,12 @@ As a demonstrative example, the bot is set to use a sample strategy based on the
 - Sample testing strategy based on 60-period SMA
 - Easy integration of Machine Learning / Deep Learning models to live trading strategies
 
+# Demo
+
+Watch a brief demo of backtesting and live trading here:
+
+https://youtu.be/3PZ054bn8Jw
+
 # Requirements
 
 - Python 3.6 or higher
