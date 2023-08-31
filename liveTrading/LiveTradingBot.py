@@ -1,12 +1,4 @@
 # Imports
-import os
-import sys
-
-# Necessary to run project as a scheduled Batch File, DO NOT DELETE
-project_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(project_path)
-
-
 from ibapi.contract import Contract
 
 from utilities.ibkrUtilities import IBApi
