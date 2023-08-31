@@ -55,16 +55,14 @@ class Bot:
     def __init__(self, symbol: str, buySellConditionFunc: callable, quantity: int = 1,
                  generateNewDataFunc: callable = None,
                  last_row_only: bool = False,
-                 periods_to_analyze: int = 50):
+                 periods_to_analyze: int = 50,
+                 port: int = 4000):
         # Connect to IB on init
         twsConnectionID = get_tws_connection_id()
         orderIDStarter = get_starter_order_id()
         self.ib = IBApi(self)
-        self.ib.connect("127.0.0.1", 4000, twsConnectionID)
+        self.ib.connect("127.0.0.1", port, twsConnectionID)
         # Listen to socket on another thread
-        while not self.ib.isConnected():
-            twsConnectionID += 1
-            self.ib.connect("127.0.0.1", 4000, twsConnectionID)
         ib_thread = threading.Thread(target=self.run_loop, daemon=True)
         ib_thread.start()
         time.sleep(1)
