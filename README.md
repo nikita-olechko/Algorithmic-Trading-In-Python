@@ -6,6 +6,18 @@ As a demonstrative example, the bot is set to use a sample strategy based on the
 
 ***Please note that this strategy is for testing purposes only and not recommended for live trading.***
 
+# Who Is This Program For?
+
+This program is tailored for users who meet the following criteria:
+
+Basic Python Proficiency: Users should have a fundamental understanding of Python programming, including variables, functions, and data structures.
+
+Interest in Algorithmic Trading: Users should have an interest in algorithmic trading and a basic understanding of financial markets. This program is not intended for absolute beginners in either Python or trading. 
+
+Willingness to Learn: While I provide instructions, users are encouraged to explore the program, understand how it works, and see how to expand to meet their trading criteria. This requires a willingness to learn and experiment. 
+
+Risk Awareness: Users must understand the risks associated with algorithmic trading and should not use this program for live trading without thorough analysis.
+
 ***See Full Disclaimer Below.***
 
 # Features
@@ -21,7 +33,7 @@ As a demonstrative example, the bot is set to use a sample strategy based on the
 
 # Demo
 
-Watch a brief demo of backtesting and live trading here:
+Watch a brief demo of backtesting and live trading in action here:
 
 https://youtu.be/3PZ054bn8Jw
 
@@ -29,7 +41,7 @@ https://youtu.be/3PZ054bn8Jw
 
 - Python 3.6 or higher
 - Interactive Brokers (IBKR) account
-- IBKR Trader Workstation (TWS) installed, open, and running on port 4000
+- IBKR Trader Workstation (TWS) installed, open, and running on port 4000 (this is not the default)
 - A subscription to live market data with IBKR (only for live trading / live testing, not required for backtesting)
 - Optional (but recommended): A simulated trading account. IBKR allows you to open a simulated account with the same data privileges as your real account. This is ideal for testing strategies on live data risk-free.
 
@@ -40,11 +52,12 @@ https://youtu.be/3PZ054bn8Jw
 
       pip install pandas==2.0.3 numpy==1.25.0 matplotlib==3.7.2 seaborn~=0.12.2 ibapi~=9.81.1.post1 scikit-learn==1.3.0 ta~=0.10.2 pytz~=2023.3 APScheduler==3.7.0 ib_insync==0.9.69 statsmodels~=0.14.0 django-basic-stats~=0.2.0 patsy~=0.5.3 scipy~=1.10.1 joblib~=1.2.0
 
+- No additional parameters (or keys or passwords) are required for setup.
 
-Update the Bot instantiation at the bottom of LiveTradingBot.py to reflect your desired trading symbol, quantity, and strategy.
-Run the Python script:
+Update the Bot instantiation in of RunTradingBot.py to reflect your desired trading symbol, quantity, and strategy.
+Navigate into the liveTrading directory and run the Python script:
 
-    python LiveTradingBot.py
+    python RunTradingBot.py
 
 There is also a batch file template to run the bot automatically on a daily basis.
 
@@ -63,9 +76,9 @@ For example, in the testing strategy greaterthan10barsma.py, there are two funct
     It returns 1 (BUY), -1 (SELL), 2 (HOLD), or 0 (no action), based on whether the average price is above or below the 10-period SMA.
     No action occurs at 2 or 0, but it is helpful for analysis purposes to differentiate the two.
 
-At the moment, the bot can only trade a fixed quantity of the asset. For example, if you specify 100, and the ticker "AAPL", the bot will place orders for 100 shares of AAPL according to your strategy. In this example, it will BUY 100 shares if above the 10-period SMA, and SELL if below the 10-period SMA. 
+The bot can only trade a fixed quantity of the asset. For example, if you specify 100, and the ticker "AAPL", the bot will place orders for 100 shares of AAPL according to your strategy. In this example, it will BUY 100 shares if above the 10-period SMA, and SELL if below the 10-period SMA. If you wish to customize orders, you will need to add custom order functions to the customOrders.py file in the liveTrading directory, and add your order condition to the place_orders_if_needed() method in LiveTradingBot.py.
 
-Orders in the sample strategy do NOT stack. Meaning if your strategy places a BUY order, it will not place another BUY order unti a SELL order has been placed, even if the BUY condition has been met. This corresponds with the fixed quantity capacity of the current model. However, this is built into the strategy, not the bot class itself, as it is designed to be flexible (e.g., maybe you want to double up under specific circumstances). You can check the last order using barDataFrame["Orders"][last_order_index] and build accordingly.
+Orders in the sample strategy do NOT stack. Meaning if your strategy places a BUY order, it will not place another BUY order until a SELL order has been placed, even if the BUY condition has been met. This corresponds with the fixed quantity capacity of the current model. However, this is built into the strategy, not the bot class itself, as it is designed to be flexible (e.g., maybe you want to double up under specific circumstances). You can check the last order using barDataFrame["Orders"][last_order_index] and build accordingly.
 
 You can create a new strategy by writing similar functions that align with your trading approach. Of course, any data generated in the first function can and should be used in the second. 
 
