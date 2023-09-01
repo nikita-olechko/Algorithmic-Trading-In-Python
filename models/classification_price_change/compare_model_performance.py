@@ -4,7 +4,7 @@ from classification_price_change import create_classification_price_change_linea
     analyze_classification_model_performance, prepare_data_classification_model
 
 Z_periods = 60
-X_percentage = 2
+X_percentage = 3
 
 for ticker in ["XOM"]:
     barsize = "1 min"
@@ -21,7 +21,7 @@ for ticker in ["XOM"]:
 
     model_data = prepare_data_classification_model(barsize=barsize, duration=model_duration, ticker=ticker,
                                                    Z_periods=Z_periods, X_percentage=X_percentage,
-                                                   months_offset=int(test_duration.split(" ")[0]),
+                                                   months_offset=int(test_duration.split(" ")[0])+1,
                                                    very_large_data=True, try_errored_tickers=True)[0]
 
     model_creation_dict = {'lm': create_classification_price_change_linear_regression_model,

@@ -109,8 +109,8 @@ def boolean_bollinger_band_location(minuteDataFrame):
 
 def price_change_over_next_Z_periods_greater_than_X_boolean(dataFrame, periods, percentage_change):
     dataFrame[f'maximum_percentage_price_change_over_next_{periods}_periods_greater_than_{percentage_change}'] = \
-        (dataFrame['Average'].rolling(window=periods).max() - dataFrame['Average']) / dataFrame['Average'] * 100 >= \
-        percentage_change
+        ((dataFrame['Average'].rolling(window=periods).max() - dataFrame['Average']) / dataFrame['Average'] * 100 >= \
+         percentage_change).astype(int)
     return dataFrame
 
 
@@ -132,10 +132,10 @@ def prepare_data_classification_model(ticker, barsize, duration, endDateTime='',
     stk_data = generate_bollinger_bands(stk_data)
     stk_data = boolean_bollinger_band_location(stk_data)
     # Y Variable
-    stk_data = price_change_over_next_Z_periods_greater_than_X_boolean(stk_data, Z_periods*2, X_percentage)
+    stk_data = price_change_over_next_Z_periods_greater_than_X_boolean(stk_data, Z_periods, X_percentage)
 
     x_columns = list(stk_data.columns)
-    y_column = f'maximum_percentage_price_change_over_next_{Z_periods*2}_periods_greater_than_{X_percentage}'
+    y_column = f'maximum_percentage_price_change_over_next_{Z_periods}_periods_greater_than_{X_percentage}'
 
     always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount', 'Orders',
                                 'Position']
@@ -166,9 +166,9 @@ def create_classification_price_change_linear_regression_model(symbol, endDateTi
     if prepped_data_column_tuple is None:
         data, x_columns, y_column = prepare_data_classification_model(data, barsize, duration, endDateTime)
     else:
-        data=prepped_data_column_tuple[0]
-        x_columns=prepped_data_column_tuple[1]
-        y_column=prepped_data_column_tuple[2]
+        data = prepped_data_column_tuple[0]
+        x_columns = prepped_data_column_tuple[1]
+        y_column = prepped_data_column_tuple[2]
     train = data
 
     X_train = train[x_columns]
@@ -204,9 +204,9 @@ def create_classification_price_change_random_forest_model(symbol, data, endDate
     if prepped_data_column_tuple is None:
         data, x_columns, y_column = prepare_data_classification_model(data, barsize, duration, endDateTime)
     else:
-        data=prepped_data_column_tuple[0]
-        x_columns=prepped_data_column_tuple[1]
-        y_column=prepped_data_column_tuple[2]
+        data = prepped_data_column_tuple[0]
+        x_columns = prepped_data_column_tuple[1]
+        y_column = prepped_data_column_tuple[2]
     train = data
 
     x_train = train[x_columns]
@@ -240,9 +240,9 @@ def create_classification_price_change_mlp_model(symbol, endDateTime='', save_mo
     if prepped_data_column_tuple is None:
         data, x_columns, y_column = prepare_data_classification_model(data, barsize, duration, endDateTime)
     else:
-        data=prepped_data_column_tuple[0]
-        x_columns=prepped_data_column_tuple[1]
-        y_column=prepped_data_column_tuple[2]
+        data = prepped_data_column_tuple[0]
+        x_columns = prepped_data_column_tuple[1]
+        y_column = prepped_data_column_tuple[2]
     x_train, x_test, y_train, y_test = train_test_split(data[x_columns], data[y_column], test_size=0.2, random_state=42)
 
     nn_regressor = MLPRegressor(max_iter=1000, random_state=42)
@@ -326,26 +326,26 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
     results['Below_1SD_Correctly_Predicted'] = np.where(results['PriceBelowLowerBB1SD'] == 1,
                                                         results['Correctly_Predicted_Change'], np.nan)
 
-    above_two_sd_series = results['Above_2SD_Correct_Direction'].dropna()
-    above_one_sd_series = results['Above_1SD_Correct_Direction'].dropna()
-    below_two_sd_series = results['Below_2SD_Correct_Direction'].dropna()
-    below_one_sd_series = results['Below_1SD_Correct_Direction'].dropna()
+    above_two_sd_series = results['Above_2SD_Correctly_Predicted'].dropna()
+    above_one_sd_series = results['Above_1SD_Correctly_Predicted'].dropna()
+    below_two_sd_series = results['Below_2SD_Correctly_Predicted'].dropna()
+    below_one_sd_series = results['Below_1SD_Correctly_Predicted'].dropna()
 
     prediction_dict = {f"{ticker}": ticker,
-                       "Overall_Correct_Direction": results['Correctly_Predicted_Change'].sum() / len(
+                       "Overall_Correct_Prediction": results['Correctly_Predicted_Change'].sum() / len(
                            results['Correctly_Predicted_Change'].dropna()),
-                       "Above_2SD_Correct_Direction": above_two_sd_series.sum() / len(above_two_sd_series),
-                       "Above_1SD_Correct_Direction": above_one_sd_series.sum() / len(above_one_sd_series),
-                       "Below_2SD_Correct_Direction": below_two_sd_series.sum() / len(below_two_sd_series),
-                       "Below_1SD_Correct_Direction": below_one_sd_series.sum() / len(below_one_sd_series)}
+                       "Above_2SD_Correctly_Predicted": above_two_sd_series.sum() / len(above_two_sd_series),
+                       "Above_1SD_Correctly_Predicted": above_one_sd_series.sum() / len(above_one_sd_series),
+                       "Below_2SD_Correctly_Predicted": below_two_sd_series.sum() / len(below_two_sd_series),
+                       "Below_1SD_Correctly_Predicted": below_one_sd_series.sum() / len(below_one_sd_series)}
 
     print("\nModel: ", model_object)
     print(prediction_dict)
 
-    results.drop(['PriceAboveUpperBB2SD', 'PriceAboveUpperBB1SD', 'PriceBelowLowerBB2SD', 'PriceBelowLowerBB1SD'],
-                 axis=1, inplace=True)
-
-    results = pd.concat([results, data], axis=1)
+    # results.drop(['PriceAboveUpperBB2SD', 'PriceAboveUpperBB1SD', 'PriceBelowLowerBB2SD', 'PriceBelowLowerBB1SD'],
+    #              axis=1, inplace=True)
+    #
+    # results = pd.concat([results, data], axis=1)
 
     model_results_file = create_classification_report_name(Z_periods, X_percentage, model_type)
 
@@ -354,9 +354,11 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
             model_results = pd.read_csv(os.path.join(model_results_file), parse_dates=True, index_col=0,
                                         date_format=DATE_FORMAT)
         except FileNotFoundError:
-            model_results = pd.DataFrame()
+            model_results = pd.DataFrame(columns=list(prediction_dict.keys()))
+    else:
+        model_results = pd.DataFrame(columns=list(prediction_dict.keys()))
 
     model_results.loc[len(model_results)] = prediction_dict
     model_results.to_csv(os.path.join(model_results_file))
 
-    return results
+    # return results
