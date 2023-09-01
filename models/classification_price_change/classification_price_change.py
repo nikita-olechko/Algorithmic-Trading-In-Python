@@ -104,24 +104,6 @@ def boolean_bollinger_band_location(minuteDataFrame):
     return minuteDataFrame
 
 
-def SD_correct_direction(actual, predicted, condition_series):
-    """
-    Determine if the price change and prediction have the same direction based on a condition.
-
-    :param actual: Actual price change.
-    :param predicted: Predicted price change.
-    :param condition_series: Condition series indicating a specific situation.
-    :return: 1 if directions match, 0 if they do not, or NaN if not applicable.
-    """
-    if condition_series == 1:
-        if actual * predicted >= 0:
-            return 1
-        else:
-            return 0
-    else:
-        return np.nan
-
-
 def price_change_over_next_Z_periods_greater_than_X_boolean(dataFrame, periods, percentage_change):
     dataFrame[f'maximum_percentage_price_change_over_next_{periods}_periods_greater_than_{percentage_change}'] = \
         (dataFrame['Average'].rolling(window=periods).max() - dataFrame['Average']) / dataFrame['Average'] * 100 > \
@@ -165,10 +147,10 @@ def prepare_training_data_classification_model(data, barsize, duration, endDateT
     return data, x_columns, y_column
 
 
-def create_relative_price_change_linear_regression_model(symbol, endDateTime='', save_model=True, barsize="1 min",
+def create_classification_price_change_linear_regression_model(symbol, endDateTime='', save_model=True, barsize="1 min",
                                                          duration="2 M", data=None):
     """
-    Create a linear regression model for predicting relative price changes.
+    Create a linear regression model for predicting classification price changes.
 
     :param symbol: Ticker symbol of the stock.
     :param endDateTime: End date and time for the data formatted as YYYYMMDD HH:MM:SS.
@@ -189,16 +171,16 @@ def create_relative_price_change_linear_regression_model(symbol, endDateTime='',
     lm.fit(X_train, y_train)
 
     if save_model:
-        model_filename = f'model_objects/relative_price_change_linear_model_{symbol}_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
+        model_filename = f'model_objects/classification_price_change_linear_model_{symbol}_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
         with open(model_filename, 'wb') as file:
             pickle.dump(lm, file)
     return lm
 
 
-def create_relative_price_change_random_forest_model(symbol, endDateTime='', save_model=True, barsize="1 min",
+def create_classification_price_change_random_forest_model(symbol, endDateTime='', save_model=True, barsize="1 min",
                                                      duration="2 M", data=None):
     """
-    Create a random forest model for predicting relative price changes.
+    Create a random forest model for predicting classification price changes.
 
     :param symbol: Ticker symbol of the stock.
     :param endDateTime: End date and time for the data.
@@ -218,16 +200,16 @@ def create_relative_price_change_random_forest_model(symbol, endDateTime='', sav
     forest.fit(x_train, y_train)
 
     if save_model:
-        model_filename = f'model_objects/relative_price_change_random_forest_model_{symbol}_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
+        model_filename = f'model_objects/classification_price_change_random_forest_model_{symbol}_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
         with open(model_filename, 'wb') as file:
             pickle.dump(forest, file)
     return forest
 
 
-def create_relative_price_change_mlp_model(symbol, endDateTime='', save_model=True, barsize="1 min",
+def create_classification_price_change_mlp_model(symbol, endDateTime='', save_model=True, barsize="1 min",
                                            duration="2 M", data=None):
     """
-    Create a multi-layer perceptron (MLP) model for predicting relative price changes.
+    Create a multi-layer perceptron (MLP) model for predicting classification price changes.
 
     :param symbol: Ticker symbol of the stock.
     :param endDateTime: End date and time for the data.
@@ -255,14 +237,15 @@ def create_relative_price_change_mlp_model(symbol, endDateTime='', save_model=Tr
     best_nn_regressor = grid_search.best_estimator_
 
     if save_model:
-        model_filename = f'model_objects/relative_price_change_mlp_model_{symbol}_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
+        model_filename = f'model_objects/classification_price_change_mlp_model_{symbol}_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
         with open(model_filename, 'wb') as file:
             pickle.dump(best_nn_regressor, file)
 
     return best_nn_regressor
 
 
-def analyze_model_performance(model_object, test_data, additional_columns_to_remove=None):
+def analyze_classification_model_performance(model_object, test_data, additional_columns_to_remove=None, Z_periods=60,
+                                              X_percentage=3):
     """
     Analyze the performance of a predictive model.
 
@@ -271,12 +254,13 @@ def analyze_model_performance(model_object, test_data, additional_columns_to_rem
     :param additional_columns_to_remove: Additional columns to remove from analysis.
     :return: DataFrame with analysis results.
     """
-    always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount', 'Orders',
-                                'Position']
-    extra_columns_to_remove = ['NextPeriodChangeInLogPrice']
 
     x_columns = list(test_data.columns)
-    y_column = 'NextPeriodChangeInLogPrice'
+    y_column = f'maximum_percentage_price_change_over_next_{Z_periods}_periods_greater_than_{X_percentage}'
+
+    always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount', 'Orders',
+                                'Position']
+    extra_columns_to_remove = [y_column]
 
     if additional_columns_to_remove is None:
         additional_columns_to_remove = []
@@ -294,39 +278,42 @@ def analyze_model_performance(model_object, test_data, additional_columns_to_rem
     predict_price_lm = predict_price_lm.reshape(-1, 1)
     predict_price_lm = pd.DataFrame(predict_price_lm, columns=['Predicted'])
     predict_price_lm.index = y_test.index
-
-    # Conduct further analysis on results data
     results = pd.DataFrame()
     results['Predicted'] = predict_price_lm
     results['Actual'] = y_test
+
+    # Unique Analysis to individual models from here
+
     results['Residual'] = results['Actual'] - results['Predicted']
-    results['Correct_Direction'] = results.apply(lambda x: 1 if x['Actual'] * x['Predicted'] >= 0 else 0, axis=1)
+    results['Correctly_Predicted_Change'] = results.apply(lambda x: 1 if x['Actual'] * x['Predicted'] > 0 else 0, axis=1)
 
     results['PriceAboveUpperBB2SD'] = x_test['PriceAboveUpperBB2SD']
     results['PriceAboveUpperBB1SD'] = x_test['PriceAboveUpperBB1SD']
     results['PriceBelowLowerBB2SD'] = x_test['PriceBelowLowerBB2SD']
     results['PriceBelowLowerBB1SD'] = x_test['PriceBelowLowerBB1SD']
 
-    results['Above_2SD_Correct_Direction'] = results.apply(
-        lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x['PriceAboveUpperBB2SD']), axis=1)
-    results['Above_1SD_Correct_Direction'] = results.apply(
-        lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x['PriceAboveUpperBB1SD']), axis=1)
-    results['Below_2SD_Correct_Direction'] = results.apply(
-        lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x['PriceBelowLowerBB2SD']), axis=1)
-    results['Below_1SD_Correct_Direction'] = results.apply(
-        lambda x: SD_correct_direction(x['Actual'], x['Predicted'], x['PriceBelowLowerBB1SD']), axis=1)
+    results['Above_2SD_Correctly_Predicted'] = np.where(results['PriceAboveUpperBB2SD'] == 1,
+                                                      results['Correctly_Predicted_Change'], np.nan)
+    results['Above_1SD_Correctly_Predicted'] = np.where(results['PriceAboveUpperBB1SD'] == 1,
+                                                        results['Correctly_Predicted_Change'], np.nan)
+    results['Below_2SD_Correctly_Predicted'] = np.where(results['PriceBelowLowerBB2SD'] == 1,
+                                                        results['Correctly_Predicted_Change'], np.nan)
+    results['Below_1SD_Correctly_Predicted'] = np.where(results['PriceBelowLowerBB1SD'] == 1,
+                                                        results['Correctly_Predicted_Change'], np.nan)
 
     above_two_sd_series = results['Above_2SD_Correct_Direction'].dropna()
     above_one_sd_series = results['Above_1SD_Correct_Direction'].dropna()
     below_two_sd_series = results['Below_2SD_Correct_Direction'].dropna()
     below_one_sd_series = results['Below_1SD_Correct_Direction'].dropna()
 
+    prediction_dict = {"Overall_Correct_Direction": results['Correctly_Predicted_Change'].sum() / len(results['Correctly_Predicted_Change'].dropna()),
+                       "Above_2SD_Correct_Direction": above_two_sd_series.sum() / len(above_two_sd_series),
+                       "Above_1SD_Correct_Direction": above_one_sd_series.sum() / len(above_one_sd_series),
+                       "Below_2SD_Correct_Direction": below_two_sd_series.sum() / len(below_two_sd_series),
+                       "Below_1SD_Correct_Direction": below_one_sd_series.sum() / len(below_one_sd_series)}
+
     print("\nModel: ", model_object)
-    print(f"Overall Correct_Direction: {results['Correct_Direction'].sum() / len(results)}")
-    print(f"Above_2SD_Correct_Direction: {above_two_sd_series.sum() / len(above_two_sd_series)}")
-    print(f"Above_1SD_Correct_Direction: {above_one_sd_series.sum() / len(above_one_sd_series)}")
-    print(f"Below_2SD_Correct_Direction: {below_two_sd_series.sum() / len(below_two_sd_series)}")
-    print(f"Below_1SD_Correct_Direction: {below_one_sd_series.sum() / len(below_one_sd_series)}\n")
+    print(prediction_dict)
 
     results.drop(['PriceAboveUpperBB2SD', 'PriceAboveUpperBB1SD', 'PriceBelowLowerBB2SD', 'PriceBelowLowerBB1SD'],
                  axis=1, inplace=True)
