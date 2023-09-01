@@ -180,8 +180,8 @@ def create_classification_price_change_linear_regression_model(symbol, endDateTi
     return lm
 
 
-def create_classification_price_change_random_forest_model(symbol, endDateTime='', save_model=True, barsize="1 min",
-                                                     duration="2 M", data=None):
+def create_classification_price_change_random_forest_model(symbol, data, endDateTime='', save_model=True, barsize="1 min",
+                                                     duration="2 M"):
     """
     Create a random forest model for predicting classification price changes.
 
@@ -248,7 +248,7 @@ def create_classification_price_change_mlp_model(symbol, endDateTime='', save_mo
 
 
 def analyze_classification_model_performance(ticker, model_object, test_data, additional_columns_to_remove=None, Z_periods=60,
-                                              X_percentage=3):
+                                              X_percentage=3, model_type='lm'):
     """
     Analyze the performance of a predictive model.
 
@@ -324,7 +324,7 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
 
     results = pd.concat([results, data], axis=1)
 
-    model_results_file = create_classification_report_name(Z_periods, X_percentage)
+    model_results_file = create_classification_report_name(Z_periods, X_percentage, model_type)
 
     if os.path.isfile(os.path.join(model_results_file)):
         try:
