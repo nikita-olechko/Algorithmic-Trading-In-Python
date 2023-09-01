@@ -256,7 +256,6 @@ def get_stock_data(ib, ticker, barsize='1 min', duration='1 M', what_to_show='TR
     folder_path = os.path.join(new_directory, "backtesting/data", "Historical Data")
 
     # If the data already exists, retrieve it
-    date_format = '%Y-%m-%d %H:%M:%S'
     if os.path.isfile(os.path.join(folder_path, file_name)):
         try:
             stk_data = pd.read_csv(os.path.join(folder_path, file_name), parse_dates=True, index_col=0,

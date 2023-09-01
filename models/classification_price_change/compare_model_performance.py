@@ -3,7 +3,7 @@ import pandas as pd
 import pickle
 
 from backtesting.backtestingUtilities.simulationUtilities import get_stock_data
-from utilities.generalUtilities import initialize_ib_connection, get_months_of_historical_data, ibkr_query_time_months
+from utilities.generalUtilities import initialize_ib_connection, get_months_of_historical_data
 from classification_price_change import create_price_variables, create_log_price_variables, \
     create_volume_change_variables, generate_bollinger_bands, boolean_bollinger_band_location, \
     price_change_over_next_Z_periods_greater_than_X_boolean, create_classification_price_change_linear_regression_model, \
@@ -24,7 +24,7 @@ for ticker in ["XOM"]:
 
     model_data = create_log_price_variables(model_data, list_of_periods=range(1, Z_periods + 1))
     model_data = create_price_variables(model_data, list_of_periods=range(1, Z_periods + 1))
-    model_data = create_volume_change_variables(model_data, list_of_periods=range(1, Z_periods + 1))
+    model_data = create_volume_change_variables(model_data, list_of_periods=range(1, 5))
     model_data = generate_bollinger_bands(model_data)
     model_data = boolean_bollinger_band_location(model_data)
     # Y Variable
