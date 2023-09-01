@@ -1,4 +1,5 @@
 import os
+import time
 
 import pandas as pd
 import datetime
@@ -263,3 +264,15 @@ def get_days_of_historical_data(ib, ticker, days=1, barsize='1 secs', what_to_sh
     if len(stk_data) <= 50:
         stk_data = None
     return stk_data
+
+
+def timer(func):
+    """Print the runtime of the decorated function"""
+    def wrapper_timer(*args, **kwargs):
+        start_time = time.perf_counter()
+        value = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        run_time = end_time - start_time
+        print(f"Finished {func.__name__!r} in {run_time:.4f} secs")
+        return value
+    return wrapper_timer
