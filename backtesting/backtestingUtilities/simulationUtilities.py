@@ -215,7 +215,17 @@ def create_summary_data(stk_data, ticker, summary_df=None):
 
 
 def retrieve_base_data(ib, ticker, barsize="1 day", duration="3 Y", what_to_show="TRADES", directory_offset=0,
-                       endDateTime='', very_large_data=False, months_offset=0):
+                       endDateTime='', very_large_data=False, months_offset=0, try_errored_tickers=False):
+    if not try_errored_tickers:
+        csv_file_path = "../backtesting/data/ErroredTickers/ErroredTickers.csv"
+        try:
+            erred_tickers = pd.read_csv(csv_file_path)
+            if ticker in erred_tickers['Ticker'].values:
+                return None
+        except FileNotFoundError as e:
+            print("Warning: Error retrieving errored ticker list |", e)
+            erred_tickers = pd.DataFrame(columns=['Ticker'])
+
     if very_large_data:
         stk_data = get_months_of_historical_data(ib, ticker, months=int(duration.split(" ")[0]), barsize=barsize,
                                                  what_to_show=what_to_show,
@@ -224,15 +234,15 @@ def retrieve_base_data(ib, ticker, barsize="1 day", duration="3 Y", what_to_show
     else:
         stk_data = get_stock_data(ib, ticker, barsize=barsize, duration=duration, what_to_show=what_to_show,
                                   directory_offset=directory_offset, endDateTime=endDateTime)
-    # fix, should not work atm as cannot find the file
-    if stk_data is None:
-        csv_file_path = "../backtesting/data/ErroredTickers/ErroredTickers.csv"
-        try:
-            erred_tickers = pd.read_csv(csv_file_path)
-        except FileNotFoundError:
-            erred_tickers = pd.DataFrame(columns=['Ticker'])
-        erred_tickers = pd.concat([erred_tickers, pd.DataFrame({'Ticker': [ticker]})], ignore_index=True)
-        erred_tickers.to_csv(csv_file_path, index=False)
+    # TODO FIX: does not work atm as cannot find the file
+    # if stk_data is None:
+    #     csv_file_path = "../backtesting/data/ErroredTickers/ErroredTickers.csv"
+    #     try:
+    #         erred_tickers = pd.read_csv(csv_file_path)
+    #     except FileNotFoundError:
+    #         erred_tickers = pd.DataFrame(columns=['Ticker'])
+    #     erred_tickers = pd.concat([erred_tickers, pd.DataFrame({'Ticker': [ticker]})], ignore_index=True)
+    #     erred_tickers.to_csv(csv_file_path, index=False)
 
     return stk_data
 

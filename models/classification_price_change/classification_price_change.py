@@ -10,10 +10,10 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.neural_network import MLPRegressor
 
-from backtesting.backtestingUtilities.simulationUtilities import get_stock_data
+from backtesting.backtestingUtilities.simulationUtilities import get_stock_data, retrieve_base_data
 from models.classification_price_change.classification_utilities import create_classification_report_name
 from utilities.__init__ import DATE_FORMAT
-from utilities.generalUtilities import initialize_ib_connection
+from utilities.generalUtilities import initialize_ib_connection, timer
 
 
 def create_log_price_variables(stk_data, list_of_periods=range(1, 11)):
@@ -31,7 +31,7 @@ def create_log_price_variables(stk_data, list_of_periods=range(1, 11)):
         stk_data[f'{period}period_change_in_log_price'] = stk_data["log_price"] - stk_data[
             f'{period}period_shifted_log_price']
         stk_data[f'{period}period_percentage_change_in_log_price'] = stk_data[f'{period}period_change_in_log_price'] \
-                                                                        / stk_data["log_price"].shift(period) * 100
+                                                                     / stk_data["log_price"].shift(period) * 100
     return stk_data
 
 
@@ -47,7 +47,7 @@ def create_price_variables(stk_data, list_of_periods=range(1, 11)):
         stk_data[f'{period}period_shifted_price'] = stk_data["Average"].shift(period)
         stk_data[f'{period}period_change_in_price'] = stk_data["Average"] - stk_data[f'{period}period_shifted_price']
         stk_data[f'{period}period_percentage_change_in_price'] = stk_data[f'{period}period_change_in_price'] \
-                                                                    / stk_data["Average"].shift(period) * 100
+                                                                 / stk_data["Average"].shift(period) * 100
     return stk_data
 
 
@@ -109,35 +109,33 @@ def boolean_bollinger_band_location(minuteDataFrame):
 
 def price_change_over_next_Z_periods_greater_than_X_boolean(dataFrame, periods, percentage_change):
     dataFrame[f'maximum_percentage_price_change_over_next_{periods}_periods_greater_than_{percentage_change}'] = \
-        (dataFrame['Average'].rolling(window=periods).max() - dataFrame['Average']) / dataFrame['Average'] * 100 > \
+        (dataFrame['Average'].rolling(window=periods).max() - dataFrame['Average']) / dataFrame['Average'] * 100 >= \
         percentage_change
     return dataFrame
 
 
-def prepare_training_data_classification_model(data, barsize, duration, endDateTime, Z_periods=60, X_percentage=3):
+def prepare_data_classification_model(ticker, barsize, duration, endDateTime='', data=None,
+                                      Z_periods=60, X_percentage=3, months_offset=0, very_large_data=False,
+                                      try_errored_tickers=True):
     """
     Prepare training data for machine learning models.
-
-    :param data: DataFrame containing stock data.
-    :param barsize: Bar size for historical data.
-    :param duration: Duration of historical data.
-    :param endDateTime: End date and time for the data.
-    :return: Processed data, feature columns, and target column.
     """
     ib = initialize_ib_connection()
     stk_data = data
     if data is None:
-        stk_data = get_stock_data(ib, "XOM", barsize, duration, directory_offset=2, endDateTime=endDateTime)
+        stk_data = retrieve_base_data(ib, ticker, barsize, duration, directory_offset=2,
+                                      endDateTime=endDateTime, months_offset=months_offset,
+                                      very_large_data=very_large_data, try_errored_tickers=try_errored_tickers)
     stk_data = create_log_price_variables(stk_data)
     stk_data = create_price_variables(stk_data)
     stk_data = create_volume_change_variables(stk_data)
     stk_data = generate_bollinger_bands(stk_data)
     stk_data = boolean_bollinger_band_location(stk_data)
     # Y Variable
-    stk_data = price_change_over_next_Z_periods_greater_than_X_boolean(stk_data, Z_periods, X_percentage)
+    stk_data = price_change_over_next_Z_periods_greater_than_X_boolean(stk_data, Z_periods*2, X_percentage)
 
     x_columns = list(stk_data.columns)
-    y_column = f'maximum_percentage_price_change_over_next_{Z_periods}_periods_greater_than_{X_percentage}'
+    y_column = f'maximum_percentage_price_change_over_next_{Z_periods*2}_periods_greater_than_{X_percentage}'
 
     always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount', 'Orders',
                                 'Position']
@@ -150,8 +148,10 @@ def prepare_training_data_classification_model(data, barsize, duration, endDateT
     return data, x_columns, y_column
 
 
+@timer
 def create_classification_price_change_linear_regression_model(symbol, endDateTime='', save_model=True, barsize="1 min",
-                                                         duration="2 M", data=None):
+                                                               duration="2 M", data=None, Z_periods=60, X_percentage=3,
+                                                               prepped_data_column_tuple=None):
     """
     Create a linear regression model for predicting classification price changes.
 
@@ -163,7 +163,12 @@ def create_classification_price_change_linear_regression_model(symbol, endDateTi
     :param data: DataFrame containing stock data.
     :return: Trained linear regression model.
     """
-    data, x_columns, y_column = prepare_training_data_classification_model(data, barsize, duration, endDateTime)
+    if prepped_data_column_tuple is None:
+        data, x_columns, y_column = prepare_data_classification_model(data, barsize, duration, endDateTime)
+    else:
+        data=prepped_data_column_tuple[0]
+        x_columns=prepped_data_column_tuple[1]
+        y_column=prepped_data_column_tuple[2]
     train = data
 
     X_train = train[x_columns]
@@ -174,14 +179,17 @@ def create_classification_price_change_linear_regression_model(symbol, endDateTi
     lm.fit(X_train, y_train)
 
     if save_model:
-        model_filename = f'model_objects/classification_price_change_linear_model_{symbol}_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
+        model_filename = f'model_objects/classification_price_change_lm_{symbol}_{Z_periods}_periods_{X_percentage}_percent_change_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
         with open(model_filename, 'wb') as file:
             pickle.dump(lm, file)
     return lm
 
 
-def create_classification_price_change_random_forest_model(symbol, data, endDateTime='', save_model=True, barsize="1 min",
-                                                     duration="2 M"):
+@timer
+def create_classification_price_change_random_forest_model(symbol, data, endDateTime='', save_model=True,
+                                                           barsize="1 min",
+                                                           duration="2 M", Z_periods=60, X_percentage=3,
+                                                           prepped_data_column_tuple=None):
     """
     Create a random forest model for predicting classification price changes.
 
@@ -193,7 +201,12 @@ def create_classification_price_change_random_forest_model(symbol, data, endDate
     :param data: DataFrame containing stock data.
     :return: Trained random forest model.
     """
-    data, x_columns, y_column = prepare_training_data_classification_model(data, barsize, duration, endDateTime)
+    if prepped_data_column_tuple is None:
+        data, x_columns, y_column = prepare_data_classification_model(data, barsize, duration, endDateTime)
+    else:
+        data=prepped_data_column_tuple[0]
+        x_columns=prepped_data_column_tuple[1]
+        y_column=prepped_data_column_tuple[2]
     train = data
 
     x_train = train[x_columns]
@@ -203,14 +216,16 @@ def create_classification_price_change_random_forest_model(symbol, data, endDate
     forest.fit(x_train, y_train)
 
     if save_model:
-        model_filename = f'model_objects/classification_price_change_random_forest_model_{symbol}_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
+        model_filename = f'model_objects/classification_price_change_rf_{symbol}_{Z_periods}_periods_{X_percentage}_percent_change_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
         with open(model_filename, 'wb') as file:
             pickle.dump(forest, file)
     return forest
 
 
+@timer
 def create_classification_price_change_mlp_model(symbol, endDateTime='', save_model=True, barsize="1 min",
-                                           duration="2 M", data=None):
+                                                 duration="2 M", data=None, Z_periods=60, X_percentage=3,
+                                                 prepped_data_column_tuple=None):
     """
     Create a multi-layer perceptron (MLP) model for predicting classification price changes.
 
@@ -222,7 +237,12 @@ def create_classification_price_change_mlp_model(symbol, endDateTime='', save_mo
     :param data: DataFrame containing stock data.
     :return: Trained MLP model.
     """
-    data, x_columns, y_column = prepare_training_data_classification_model(data, barsize, duration, endDateTime)
+    if prepped_data_column_tuple is None:
+        data, x_columns, y_column = prepare_data_classification_model(data, barsize, duration, endDateTime)
+    else:
+        data=prepped_data_column_tuple[0]
+        x_columns=prepped_data_column_tuple[1]
+        y_column=prepped_data_column_tuple[2]
     x_train, x_test, y_train, y_test = train_test_split(data[x_columns], data[y_column], test_size=0.2, random_state=42)
 
     nn_regressor = MLPRegressor(max_iter=1000, random_state=42)
@@ -240,15 +260,16 @@ def create_classification_price_change_mlp_model(symbol, endDateTime='', save_mo
     best_nn_regressor = grid_search.best_estimator_
 
     if save_model:
-        model_filename = f'model_objects/classification_price_change_mlp_model_{symbol}_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
+        model_filename = f'model_objects/classification_price_change_mlp_{symbol}_{Z_periods}_periods_{X_percentage}_percent_change_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
         with open(model_filename, 'wb') as file:
             pickle.dump(best_nn_regressor, file)
 
     return best_nn_regressor
 
 
-def analyze_classification_model_performance(ticker, model_object, test_data, additional_columns_to_remove=None, Z_periods=60,
-                                              X_percentage=3, model_type='lm'):
+def analyze_classification_model_performance(ticker, model_object, test_data, additional_columns_to_remove=None,
+                                             Z_periods=60,
+                                             X_percentage=3, model_type='lm'):
     """
     Analyze the performance of a predictive model.
 
@@ -288,7 +309,8 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
     # Unique Analysis to individual models from here
 
     results['Residual'] = results['Actual'] - results['Predicted']
-    results['Correctly_Predicted_Change'] = results.apply(lambda x: 1 if x['Actual'] * x['Predicted'] > 0 else 0, axis=1)
+    results['Correctly_Predicted_Change'] = results.apply(lambda x: 1 if x['Actual'] * x['Predicted'] > 0 else 0,
+                                                          axis=1)
 
     results['PriceAboveUpperBB2SD'] = x_test['PriceAboveUpperBB2SD']
     results['PriceAboveUpperBB1SD'] = x_test['PriceAboveUpperBB1SD']
@@ -296,7 +318,7 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
     results['PriceBelowLowerBB1SD'] = x_test['PriceBelowLowerBB1SD']
 
     results['Above_2SD_Correctly_Predicted'] = np.where(results['PriceAboveUpperBB2SD'] == 1,
-                                                      results['Correctly_Predicted_Change'], np.nan)
+                                                        results['Correctly_Predicted_Change'], np.nan)
     results['Above_1SD_Correctly_Predicted'] = np.where(results['PriceAboveUpperBB1SD'] == 1,
                                                         results['Correctly_Predicted_Change'], np.nan)
     results['Below_2SD_Correctly_Predicted'] = np.where(results['PriceBelowLowerBB2SD'] == 1,
@@ -310,7 +332,8 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
     below_one_sd_series = results['Below_1SD_Correct_Direction'].dropna()
 
     prediction_dict = {f"{ticker}": ticker,
-                       "Overall_Correct_Direction": results['Correctly_Predicted_Change'].sum() / len(results['Correctly_Predicted_Change'].dropna()),
+                       "Overall_Correct_Direction": results['Correctly_Predicted_Change'].sum() / len(
+                           results['Correctly_Predicted_Change'].dropna()),
                        "Above_2SD_Correct_Direction": above_two_sd_series.sum() / len(above_two_sd_series),
                        "Above_1SD_Correct_Direction": above_one_sd_series.sum() / len(above_one_sd_series),
                        "Below_2SD_Correct_Direction": below_two_sd_series.sum() / len(below_two_sd_series),
@@ -329,7 +352,7 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
     if os.path.isfile(os.path.join(model_results_file)):
         try:
             model_results = pd.read_csv(os.path.join(model_results_file), parse_dates=True, index_col=0,
-                                   date_format=DATE_FORMAT)
+                                        date_format=DATE_FORMAT)
         except FileNotFoundError:
             model_results = pd.DataFrame()
 

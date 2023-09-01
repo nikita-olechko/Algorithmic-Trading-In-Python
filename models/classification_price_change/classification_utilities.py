@@ -16,11 +16,13 @@ def model_exists(Z_periods=60, X_percentage=3, model_type='lm'):
     return os.path.isfile(create_classification_report_name(Z_periods, X_percentage, model_type))
 
 
-def get_model(model_creation_dict, model_type, symbol, Z_periods, X_percentage, model_data, barsize, duration):
+def get_model(model_creation_dict, model_type, symbol, Z_periods, X_percentage, barsize, duration, model_data=None, prepped_data_column_tuple=None):
     model_filename = f'model_objects/classification_price_change_{model_type}_{symbol}_{Z_periods}_periods_{X_percentage}_percent_change_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
     if os.path.isfile(model_filename):
         with open(model_filename, 'rb') as file:
             model = pickle.load(file)
     else:
-        model = model_creation_dict[model_type](symbol, save_model=True, data=model_data, barsize=barsize, duration=duration)
+        model = model_creation_dict[model_type](symbol, save_model=True, data=model_data,
+                                                barsize=barsize, duration=duration,
+                                                prepped_data_column_tuple=prepped_data_column_tuple)
     return model
