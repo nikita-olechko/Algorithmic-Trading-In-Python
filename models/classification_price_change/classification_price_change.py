@@ -1,3 +1,4 @@
+import os
 import pickle
 
 import numpy as np
@@ -10,6 +11,8 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.neural_network import MLPRegressor
 
 from backtesting.backtestingUtilities.simulationUtilities import get_stock_data
+from models.classification_price_change.classification_utilities import create_classification_report_name
+from utilities.__init__ import DATE_FORMAT
 from utilities.generalUtilities import initialize_ib_connection
 
 
@@ -244,7 +247,7 @@ def create_classification_price_change_mlp_model(symbol, endDateTime='', save_mo
     return best_nn_regressor
 
 
-def analyze_classification_model_performance(model_object, test_data, additional_columns_to_remove=None, Z_periods=60,
+def analyze_classification_model_performance(ticker, model_object, test_data, additional_columns_to_remove=None, Z_periods=60,
                                               X_percentage=3):
     """
     Analyze the performance of a predictive model.
@@ -306,7 +309,8 @@ def analyze_classification_model_performance(model_object, test_data, additional
     below_two_sd_series = results['Below_2SD_Correct_Direction'].dropna()
     below_one_sd_series = results['Below_1SD_Correct_Direction'].dropna()
 
-    prediction_dict = {"Overall_Correct_Direction": results['Correctly_Predicted_Change'].sum() / len(results['Correctly_Predicted_Change'].dropna()),
+    prediction_dict = {f"{ticker}": ticker,
+                       "Overall_Correct_Direction": results['Correctly_Predicted_Change'].sum() / len(results['Correctly_Predicted_Change'].dropna()),
                        "Above_2SD_Correct_Direction": above_two_sd_series.sum() / len(above_two_sd_series),
                        "Above_1SD_Correct_Direction": above_one_sd_series.sum() / len(above_one_sd_series),
                        "Below_2SD_Correct_Direction": below_two_sd_series.sum() / len(below_two_sd_series),
@@ -319,4 +323,17 @@ def analyze_classification_model_performance(model_object, test_data, additional
                  axis=1, inplace=True)
 
     results = pd.concat([results, data], axis=1)
+
+    model_results_file = create_classification_report_name(Z_periods, X_percentage)
+
+    if os.path.isfile(os.path.join(model_results_file)):
+        try:
+            model_results = pd.read_csv(os.path.join(model_results_file), parse_dates=True, index_col=0,
+                                   date_format=DATE_FORMAT)
+        except FileNotFoundError:
+            model_results = pd.DataFrame()
+
+    model_results.loc[len(model_results)] = prediction_dict
+    model_results.to_csv(os.path.join(model_results_file))
+
     return results
