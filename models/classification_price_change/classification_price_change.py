@@ -3,14 +3,14 @@ import pickle
 
 import numpy as np
 import pandas as pd
-from sklearn import (
-    linear_model
-)
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.neural_network import MLPRegressor
 
-from backtesting.backtestingUtilities.simulationUtilities import get_stock_data, retrieve_base_data
+from sklearn.linear_model import LogisticRegression
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.neural_network import MLPClassifier
+
+from backtesting.backtestingUtilities.simulationUtilities import retrieve_base_data
 from models.classification_price_change.classification_utilities import create_classification_report_name
 from utilities.__init__ import DATE_FORMAT
 from utilities.generalUtilities import initialize_ib_connection, timer
@@ -149,9 +149,9 @@ def prepare_data_classification_model(ticker, barsize, duration, endDateTime='',
 
 
 @timer
-def create_classification_price_change_linear_regression_model(symbol, endDateTime='', save_model=True, barsize="1 min",
-                                                               duration="2 M", data=None, Z_periods=60, X_percentage=3,
-                                                               prepped_data_column_tuple=None):
+def create_classification_price_change_logistic_regression_model(symbol, endDateTime='', save_model=True, barsize="1 min",
+                                                                 duration="2 M", data=None, Z_periods=60, X_percentage=3,
+                                                                 prepped_data_column_tuple=None):
     """
     Create a linear regression model for predicting classification price changes.
 
@@ -174,16 +174,15 @@ def create_classification_price_change_linear_regression_model(symbol, endDateTi
     X_train = train[x_columns]
     y_train = train[y_column]
 
-    # Create and train the model
-    lm = linear_model.LinearRegression()
-    lm.fit(X_train, y_train)
+    # Create and train the logistic regression model
+    logistic_reg = LogisticRegression()
+    logistic_reg.fit(X_train, y_train)
 
     if save_model:
         model_filename = f'model_objects/classification_price_change_lm_{symbol}_{Z_periods}_periods_{X_percentage}_percent_change_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
         with open(model_filename, 'wb') as file:
-            pickle.dump(lm, file)
-    return lm
-
+            pickle.dump(logistic_reg, file)
+    return logistic_reg
 
 @timer
 def create_classification_price_change_random_forest_model(symbol, data, endDateTime='', save_model=True,
@@ -209,18 +208,18 @@ def create_classification_price_change_random_forest_model(symbol, data, endDate
         y_column = prepped_data_column_tuple[2]
     train = data
 
-    x_train = train[x_columns]
+    X_train = train[x_columns]
     y_train = train[y_column]
 
-    forest = RandomForestRegressor()
-    forest.fit(x_train, y_train)
+    # Create and train the Random Forest classification model
+    random_forest = RandomForestClassifier()
+    random_forest.fit(X_train, y_train)
 
     if save_model:
         model_filename = f'model_objects/classification_price_change_rf_{symbol}_{Z_periods}_periods_{X_percentage}_percent_change_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
         with open(model_filename, 'wb') as file:
-            pickle.dump(forest, file)
-    return forest
-
+            pickle.dump(random_forest, file)
+    return random_forest
 
 @timer
 def create_classification_price_change_mlp_model(symbol, endDateTime='', save_model=True, barsize="1 min",
@@ -243,9 +242,10 @@ def create_classification_price_change_mlp_model(symbol, endDateTime='', save_mo
         data = prepped_data_column_tuple[0]
         x_columns = prepped_data_column_tuple[1]
         y_column = prepped_data_column_tuple[2]
+
     x_train, x_test, y_train, y_test = train_test_split(data[x_columns], data[y_column], test_size=0.2, random_state=42)
 
-    nn_regressor = MLPRegressor(max_iter=1000, random_state=42)
+    mlp_classifier = MLPClassifier(max_iter=1000, random_state=42)
 
     param_grid = {
         'hidden_layer_sizes': [(50,), (100,), (50, 50), (100, 50)],
@@ -253,19 +253,18 @@ def create_classification_price_change_mlp_model(symbol, endDateTime='', save_mo
         'alpha': [0.0001, 0.001, 0.01],
     }
 
-    grid_search = GridSearchCV(nn_regressor, param_grid, cv=3, scoring='neg_mean_squared_error')
+    grid_search = GridSearchCV(mlp_classifier, param_grid, cv=3, scoring='accuracy')
 
     grid_search.fit(x_train, y_train)
 
-    best_nn_regressor = grid_search.best_estimator_
+    best_mlp_classifier = grid_search.best_estimator_
 
     if save_model:
         model_filename = f'model_objects/classification_price_change_mlp_{symbol}_{Z_periods}_periods_{X_percentage}_percent_change_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
         with open(model_filename, 'wb') as file:
-            pickle.dump(best_nn_regressor, file)
+            pickle.dump(best_mlp_classifier, file)
 
-    return best_nn_regressor
-
+    return best_mlp_classifier
 
 def analyze_classification_model_performance(ticker, model_object, test_data, additional_columns_to_remove=None,
                                              Z_periods=60,

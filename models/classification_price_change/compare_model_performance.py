@@ -1,5 +1,5 @@
 from models.classification_price_change.classification_utilities import get_model
-from classification_price_change import create_classification_price_change_linear_regression_model, \
+from classification_price_change import create_classification_price_change_logistic_regression_model, \
     create_classification_price_change_random_forest_model, create_classification_price_change_mlp_model, \
     analyze_classification_model_performance, prepare_data_classification_model
 
@@ -24,7 +24,7 @@ for ticker in ["XOM"]:
                                                    months_offset=int(test_duration.split(" ")[0])+1,
                                                    very_large_data=True, try_errored_tickers=True)[0]
 
-    model_creation_dict = {'lm': create_classification_price_change_linear_regression_model,
+    model_creation_dict = {'lm': create_classification_price_change_logistic_regression_model,
                            'rf': create_classification_price_change_random_forest_model,
                            'mlp': create_classification_price_change_mlp_model}
 
