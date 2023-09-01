@@ -150,7 +150,8 @@ class ModelAccuracyBot:
                    "Close": bar.close, "Average": bar.average, "BarCount": bar.barCount, "Orders": ""}
         self.barDataFrame.loc[len(self.barDataFrame)] = bar_row
         # Note: minuteDataFrame is above realtime condition to ensure historical data is in minuteDataFrame.
-        # We do not want this in liveTrading - this technically performs redundant operations but is insignificant for testing.
+        # We do not want this here, it should be in realtime in liveTrading -
+        # this technically performs redundant operations but is insignificant for testing.
         self.minuteDataFrame = average_bars_by_minute(self.barDataFrame, self.minuteDataFrame)
 
         if realtime:
