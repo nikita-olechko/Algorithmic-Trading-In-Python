@@ -128,9 +128,9 @@ def prepare_data_classification_model(ticker, barsize, duration, endDateTime='',
         stk_data = retrieve_base_data(ib, ticker, barsize, duration, directory_offset=2,
                                       endDateTime=endDateTime, months_offset=months_offset,
                                       very_large_data=very_large_data, try_errored_tickers=try_errored_tickers)
-    stk_data = create_log_price_variables(stk_data, list_of_periods=range(1, Z_periods))
-    stk_data = create_price_variables(stk_data, list_of_periods=range(1, Z_periods))
-    stk_data = create_volume_change_variables(stk_data, list_of_periods=range(1, Z_periods))
+    stk_data = create_log_price_variables(stk_data, list_of_periods=range(1, Z_periods, 10))
+    stk_data = create_price_variables(stk_data, list_of_periods=range(1, Z_periods, 10))
+    stk_data = create_volume_change_variables(stk_data, list_of_periods=range(1, Z_periods, 10))
     stk_data = generate_bollinger_bands(stk_data)
     stk_data = boolean_bollinger_band_location(stk_data)
     # Y Variable
