@@ -44,7 +44,8 @@ def get_model(model_creation_dict, model_type, symbol, Z_periods, X_percentage, 
         with open(model_filename, 'rb') as file:
             model = pickle.load(file)
     else:
-        model = model_creation_dict[model_type](symbol, save_model=True, data=model_data,
+        model = model_creation_dict[model_type](symbol, save_model=True, data=model_data, X_percentage=X_percentage,
+                                                Z_periods=Z_periods,
                                                 barsize=barsize, duration=duration,
                                                 prepped_data_column_tuple=prepped_data_column_tuple)
     return model
