@@ -48,6 +48,8 @@ def create_price_variables(stk_data, list_of_periods=range(1, 11)):
         stk_data[f'{period}period_change_in_price'] = stk_data["Average"] - stk_data[f'{period}period_shifted_price']
         stk_data[f'{period}period_percentage_change_in_price'] = stk_data[f'{period}period_change_in_price'] \
                                                                  / stk_data["Average"].shift(period) * 100
+        stk_data[f'sum_of_absolute_percentage_price_changes_over_{period}_periods'] = stk_data[
+            f'{period}period_percentage_change_in_price'].abs().rolling(window=period).sum()
     return stk_data
 
 
@@ -126,9 +128,9 @@ def prepare_data_classification_model(ticker, barsize, duration, endDateTime='',
         stk_data = retrieve_base_data(ib, ticker, barsize, duration, directory_offset=2,
                                       endDateTime=endDateTime, months_offset=months_offset,
                                       very_large_data=very_large_data, try_errored_tickers=try_errored_tickers)
-    stk_data = create_log_price_variables(stk_data)
-    stk_data = create_price_variables(stk_data)
-    stk_data = create_volume_change_variables(stk_data)
+    stk_data = create_log_price_variables(stk_data, list_of_periods=range(1, Z_periods))
+    stk_data = create_price_variables(stk_data, list_of_periods=range(1, Z_periods))
+    stk_data = create_volume_change_variables(stk_data, list_of_periods=range(1, Z_periods))
     stk_data = generate_bollinger_bands(stk_data)
     stk_data = boolean_bollinger_band_location(stk_data)
     # Y Variable
@@ -145,12 +147,16 @@ def prepare_data_classification_model(ticker, barsize, duration, endDateTime='',
         x_columns.remove(column)
 
     data = stk_data.dropna()
+    data = data[~data.isin([np.inf, -np.inf]).any(axis=1)]
+
     return data, x_columns, y_column
 
 
 @timer
-def create_classification_price_change_logistic_regression_model(symbol, endDateTime='', save_model=True, barsize="1 min",
-                                                                 duration="2 M", data=None, Z_periods=60, X_percentage=3,
+def create_classification_price_change_logistic_regression_model(symbol, endDateTime='', save_model=True,
+                                                                 barsize="1 min",
+                                                                 duration="2 M", data=None, Z_periods=60,
+                                                                 X_percentage=3,
                                                                  prepped_data_column_tuple=None):
     """
     Create a linear regression model for predicting classification price changes.
@@ -183,6 +189,7 @@ def create_classification_price_change_logistic_regression_model(symbol, endDate
         with open(model_filename, 'wb') as file:
             pickle.dump(logistic_reg, file)
     return logistic_reg
+
 
 @timer
 def create_classification_price_change_random_forest_model(symbol, data, endDateTime='', save_model=True,
@@ -220,6 +227,7 @@ def create_classification_price_change_random_forest_model(symbol, data, endDate
         with open(model_filename, 'wb') as file:
             pickle.dump(random_forest, file)
     return random_forest
+
 
 @timer
 def create_classification_price_change_mlp_model(symbol, endDateTime='', save_model=True, barsize="1 min",
@@ -266,6 +274,7 @@ def create_classification_price_change_mlp_model(symbol, endDateTime='', save_mo
 
     return best_mlp_classifier
 
+
 def analyze_classification_model_performance(ticker, model_object, test_data, additional_columns_to_remove=None,
                                              Z_periods=60,
                                              X_percentage=3, model_type='lm'):
@@ -308,8 +317,15 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
     # Unique Analysis to individual models from here
 
     results['Residual'] = results['Actual'] - results['Predicted']
-    results['Correctly_Predicted_Change'] = results.apply(lambda x: 1 if x['Actual'] * x['Predicted'] > 0 else 0,
-                                                          axis=1)
+
+    def correctly_predicted_change(actual, predicted):
+        if actual == 1:
+            return predicted
+        return np.nan
+
+    results['Correctly_Predicted_Change'] = results.apply(
+        lambda x: correctly_predicted_change(x['Actual'], x['Predicted']),
+        axis=1)
 
     results['PriceAboveUpperBB2SD'] = x_test['PriceAboveUpperBB2SD']
     results['PriceAboveUpperBB1SD'] = x_test['PriceAboveUpperBB1SD']
@@ -330,9 +346,11 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
     below_two_sd_series = results['Below_2SD_Correctly_Predicted'].dropna()
     below_one_sd_series = results['Below_1SD_Correctly_Predicted'].dropna()
 
-    prediction_dict = {f"{ticker}": ticker,
+    prediction_dict = {"ticker": ticker,
                        "Overall_Correct_Prediction": results['Correctly_Predicted_Change'].sum() / len(
                            results['Correctly_Predicted_Change'].dropna()),
+                       "Number_Of_Occurences": sum(results['Actual']),
+                       "Number_Of_Detections": sum(results['Correctly_Predicted_Change']),
                        "Above_2SD_Correctly_Predicted": above_two_sd_series.sum() / len(above_two_sd_series),
                        "Above_1SD_Correctly_Predicted": above_one_sd_series.sum() / len(above_one_sd_series),
                        "Below_2SD_Correctly_Predicted": below_two_sd_series.sum() / len(below_two_sd_series),
@@ -340,11 +358,6 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
 
     print("\nModel: ", model_object)
     print(prediction_dict)
-
-    # results.drop(['PriceAboveUpperBB2SD', 'PriceAboveUpperBB1SD', 'PriceBelowLowerBB2SD', 'PriceBelowLowerBB1SD'],
-    #              axis=1, inplace=True)
-    #
-    # results = pd.concat([results, data], axis=1)
 
     model_results_file = create_classification_report_name(Z_periods, X_percentage, model_type)
 
@@ -359,5 +372,3 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
 
     model_results.loc[len(model_results)] = prediction_dict
     model_results.to_csv(os.path.join(model_results_file))
-
-    # return results
