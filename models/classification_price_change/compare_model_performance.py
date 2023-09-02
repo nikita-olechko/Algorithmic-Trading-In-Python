@@ -6,14 +6,14 @@ from classification_price_change import create_classification_price_change_logis
 
 def run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, list_of_tickers,
                                             models_to_run=['lm', 'rf', 'mlp']):
+    barsize = "1 min"
+    model_duration = "12 M"
+    test_duration = "2 M"
+
     for Z_periods in list_of_Z_periods:
         for X_percentage in list_of_X_percentages:
             for ticker in list_of_tickers:
                 try:
-                    barsize = "1 min"
-                    model_duration = "12 M"
-                    test_duration = "2 M"
-
                     model_data, x_columns, y_column = prepare_data_classification_model(barsize=barsize,
                                                                                         duration=model_duration,
                                                                                         ticker=ticker,
