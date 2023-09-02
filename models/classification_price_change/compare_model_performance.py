@@ -1,7 +1,13 @@
+from pandas.errors import PerformanceWarning
+import warnings
+
+
 from models.classification_price_change.classification_utilities import get_model
 from classification_price_change import create_classification_price_change_logistic_regression_model, \
     create_classification_price_change_random_forest_model, create_classification_price_change_mlp_model, \
     analyze_classification_model_performance, prepare_data_classification_model
+
+warning_categories_to_ignore = [PerformanceWarning, RuntimeWarning]
 
 
 def run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, list_of_tickers,
@@ -52,4 +58,8 @@ list_of_X_percentages = [3, 2, 1]
 list_of_tickers = ['XOM', 'AAPL', 'MSFT', 'AMZN', 'FB', 'GOOG', 'GOOGL', 'JNJ', 'V', 'PG', 'JPM', 'UNH', 'HD', 'MA']
 models_to_run = ['lm', 'rf', 'mlp']
 
+
+# Filter out the specified warning categories
+for warning_category in warning_categories_to_ignore:
+    warnings.filterwarnings("ignore", category=warning_category)
 run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, list_of_tickers, models_to_run)
