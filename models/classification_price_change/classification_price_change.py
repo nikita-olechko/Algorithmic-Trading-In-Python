@@ -11,7 +11,8 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.neural_network import MLPClassifier
 
 from backtesting.backtestingUtilities.simulationUtilities import retrieve_base_data
-from models.classification_price_change.classification_utilities import create_classification_report_name
+from models.classification_price_change.classification_utilities import create_classification_report_name, \
+    occurences_more_than_120_periods_apart, correctly_identified_occurences_more_than_120_periods_apart
 from utilities.__init__ import DATE_FORMAT
 from utilities.generalUtilities import initialize_ib_connection, timer
 
@@ -347,10 +348,16 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
     below_one_sd_series = results['Below_1SD_Correctly_Predicted'].dropna()
 
     prediction_dict = {"ticker": ticker,
-                       "Overall_Correct_Prediction": results['Correctly_Predicted_Change'].sum() / len(
+                       "Overall_Correct_Prediction_When_Detected": results['Correctly_Predicted_Change'].sum() / len(
                            results['Correctly_Predicted_Change'].dropna()),
-                       "Number_Of_Occurences": sum(results['Actual']),
-                       "Number_Of_Detections": sum(results['Correctly_Predicted_Change']),
+                       "Number_Of_Total_Occurences": sum(results['Actual']),
+                       "Number_Of_Total_Detections": results['Correctly_Predicted_Change'].sum(),
+                       "Number_of_Occurences_More_Than_120_Periods_Apart": occurences_more_than_120_periods_apart(
+                           results),
+                       "Number_of_Detections_More_Than_120_Periods_Apart": occurences_more_than_120_periods_apart(
+                           results, column_name='Correctly_Predicted_Change'),
+                       "Number_Occurences_More_Than_120_Periods_Apart_Correctly_Predicted":
+                           correctly_identified_occurences_more_than_120_periods_apart(results),
                        "Above_2SD_Correctly_Predicted": above_two_sd_series.sum() / len(above_two_sd_series),
                        "Above_1SD_Correctly_Predicted": above_one_sd_series.sum() / len(above_one_sd_series),
                        "Below_2SD_Correctly_Predicted": below_two_sd_series.sum() / len(below_two_sd_series),
