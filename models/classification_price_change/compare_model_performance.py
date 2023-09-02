@@ -37,7 +37,7 @@ def run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percent
                         model = get_model(model_creation_dict, model, ticker, Z_periods, X_percentage,
                                        prepped_data_column_tuple=model_data_tuple, barsize=barsize, duration=model_duration)
 
-                        analyze_classification_model_performance(ticker=ticker, model_object=lm,
+                        analyze_classification_model_performance(ticker=ticker, model_object=model,
                                                                               test_data=test_data,
                                                                               model_type=model, Z_periods=Z_periods,
                                                                               X_percentage=X_percentage)
