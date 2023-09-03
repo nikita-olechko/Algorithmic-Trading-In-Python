@@ -3,22 +3,28 @@ import pickle
 from itertools import groupby, count
 
 
-def occurences_more_than_120_periods_apart(dataframe, column_name='Actual'):
-    # get the indices of all where dataframe['Actual'] == 1
-    indices = dataframe[dataframe[column_name] == 1].index
-    # count all indice groups where the difference between the first and last indice is greater than 120
-    return sum(1 for _ in (list(g) for _, g in groupby(indices, key=lambda n, c=count(): n - next(c))) if len(_) > 120)
+def occurences_more_than_Z_periods_apart(dataframe, column_name='Actual', Z_periods=60):
+    indices = list(dataframe[dataframe[column_name] == 1].index)
+    separate_occurences = []
+    for index, occurence in enumerate(indices):
+        if index + 1 < len(indices):
+            if indices[index + 1] - occurence > Z_periods:
+                separate_occurences.append(occurence)
+        else:
+            separate_occurences.append(occurence)
+    return separate_occurences
 
 
-def correctly_identified_occurences_more_than_120_periods_apart(dataframe):
-    actual_indices = dataframe[dataframe['Actual'] == 1].index
-    # group these indices when the difference between the first and last indice greater than 120
-    ending_group_indices = [list(g) for _, g in groupby(actual_indices, key=lambda n, c=count(): n - next(c)) if
-                            len(_) > 120]
-    # indices of th
-    predicted_indices = dataframe[dataframe['Predicted'] == 1].index
-    # count the number of predicted indices that are in within 60 of an ending group indice
-    return sum(1 for _ in ending_group_indices if any(abs(_ - i) <= 60 for i in predicted_indices))
+def incorrect_detections_not_within_Z_periods_of_correct_detection(dataframe, Z_periods):
+    actual_occurences = occurences_more_than_Z_periods_apart(dataframe, column_name='Actual', Z_periods=Z_periods)
+    predicted_occurences = occurences_more_than_Z_periods_apart(dataframe, column_name='Predicted', Z_periods=Z_periods)
+    incorrect_detections = []
+    for detection in predicted_occurences:
+        # find the closest value in actual_occurences
+        closest_value = min(actual_occurences, key=lambda x: abs(x - detection))
+        if abs(closest_value - detection) > Z_periods:
+            incorrect_detections.append(detection)
+    return incorrect_detections
 
 
 def create_classification_report_name(Z_periods=60, X_percentage=3, model_type='lm'):
