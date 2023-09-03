@@ -111,14 +111,10 @@ def boolean_bollinger_band_location(minuteDataFrame):
 
 
 def price_change_over_next_Z_periods_greater_than_X_boolean(dataFrame, periods, percentage_change):
+    dataFrame['Max_Price_in_Next_Z_Periods'] = dataFrame['Average'].rolling(periods).max().shift(-(periods-1))
     dataFrame[f'maximum_percentage_price_change_over_next_{periods}_periods_greater_than_{percentage_change}'] = \
-        ((dataFrame['Average'].rolling(window=periods).max() - dataFrame['Average']) / dataFrame['Average'] * 100 >= \
-         percentage_change).astype(int)
-    dataFrame['Test'] = 0
-    for index, price in enumerate(dataFrame['Average']):
-        max_price = dataFrame['Average'].rolling(window=periods).max()
-        if (max_price - price)/price * 100 >= percentage_change:
-            dataFrame.loc[index, 'Test'] = 1
+        ((dataFrame['Max_Price_in_Next_Z_Periods'] - dataFrame['Average']) / dataFrame['Average']) * 100 >= percentage_change
+    dataFrame.drop(['Max_Price_in_Next_Z_Periods'], axis=1, inplace=True)
     return dataFrame
 
 
