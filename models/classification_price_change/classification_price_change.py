@@ -318,7 +318,7 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
 
     # Unique Analysis to individual models from here
 
-    results['Residual'] = results['Actual'] - results['Predicted']
+    results['Residual'] = results['Actual'].astype(int) - results['Predicted'].astype(int)
     results['Incorrect_Detections'] = (results["Residual"] == -1).astype(int)
 
     def correctly_predicted_change(actual, predicted):
@@ -366,10 +366,10 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
                                                                     , Z_periods=Z_periods)),
                        f"Number_of_Incorrect_Detections_Not_Within_{Z_periods}_Periods_Of_Correct_Detection":
                            len(incorrect_detections_not_within_Z_periods_of_correct_detection(results, Z_periods)),
-                       "Above_2SD_Correctly_Predicted": above_two_sd_series.sum() / len(above_two_sd_series),
-                       "Above_1SD_Correctly_Predicted": above_one_sd_series.sum() / len(above_one_sd_series),
-                       "Below_2SD_Correctly_Predicted": below_two_sd_series.sum() / len(below_two_sd_series),
-                       "Below_1SD_Correctly_Predicted": below_one_sd_series.sum() / len(below_one_sd_series)}
+                       "Above_2SD_Correctly_Predicted": above_two_sd_series.sum(),
+                       "Above_1SD_Correctly_Predicted": above_one_sd_series.sum(),
+                       "Below_2SD_Correctly_Predicted": below_two_sd_series.sum(),
+                       "Below_1SD_Correctly_Predicted": below_one_sd_series.sum()}
 
     print("\nModel: ", model_object)
     print(prediction_dict)

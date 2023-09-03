@@ -61,6 +61,6 @@ list_of_tickers = ['XOM', 'AAPL', 'TSLA', 'MSFT', 'AMZN', 'FB']
 models_to_run = ['rf']
 
 # Filter out the specified warning categories
-for warning_category in warning_categories_to_ignore:
-    warnings.filterwarnings("ignore", category=warning_category)
+# for warning_category in warning_categories_to_ignore:
+#     warnings.filterwarnings("ignore", category=warning_category)
 run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, list_of_tickers, models_to_run)
