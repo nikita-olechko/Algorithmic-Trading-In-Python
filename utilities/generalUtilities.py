@@ -185,8 +185,9 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
             stk_data = stk_data.sort_values(by=['Date'])
             stk_data["Orders"] = 0
             stk_data["Position"] = 0
-            stk_data.to_csv(os.path.join(folder_path, file_name))
-            print("Historical Data Created")
+            if len(stk_data) >= 50:
+                stk_data.to_csv(os.path.join(folder_path, file_name))
+                print("Historical Data Created")
         except Exception as e:
             print("An error occurred:", str(e))
             print(f"Historical Data for {ticker} NOT Created")
@@ -259,8 +260,9 @@ def get_days_of_historical_data(ib, ticker, days=1, barsize='1 secs', what_to_sh
         stk_data = stk_data.sort_values(by=['Date'])
         stk_data["Orders"] = 0
         stk_data["Position"] = 0
-        stk_data.to_csv(os.path.join(folder_path, file_name))
-        print("Historical Data Created")
+        if len(stk_data) >= 50:
+            stk_data.to_csv(os.path.join(folder_path, file_name))
+            print("Historical Data Created")
     if len(stk_data) <= 50:
         stk_data = None
     return stk_data
