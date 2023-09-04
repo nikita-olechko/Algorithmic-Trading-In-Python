@@ -285,7 +285,7 @@ def create_classification_price_change_mlp_model(symbol, endDateTime='', save_mo
 
 def analyze_classification_model_performance(ticker, model_object, test_data, additional_columns_to_remove=None,
                                              Z_periods=60,
-                                             X_percentage=3, model_type='lm'):
+                                             X_percentage=3, model_type='lm', allowable_error=0):
     """
     Analyze the performance of a predictive model.
 
@@ -324,8 +324,26 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
 
     # Unique Analysis to individual models from here
 
-    results['Residual'] = results['Actual'] - results['Predicted']
+    results['Residual'] = results['Actual'].astype(int) - results['Predicted'].astype(int)
     results['Incorrect_Detections'] = (results["Residual"] == -1).astype(int)
+
+    data['Max_Price_in_Next_Z_Periods'] = data['Average'].rolling(Z_periods).max().shift(-(Z_periods - 1))
+    data[f'maximum_percentage_price_change_over_next_{Z_periods}'] = \
+        ((data['Max_Price_in_Next_Z_Periods'] - data['Average']) / data[
+            'Average']) * 100
+
+    strictly_incorrect_detection_indices = incorrect_detections_not_within_Z_periods_of_correct_detection(results,
+                                                                                                          Z_periods)
+
+    detections_within_error = []
+    detections_outside_error = []
+
+    for index in strictly_incorrect_detection_indices:
+        max_percentage_price_change = data[f'maximum_percentage_price_change_over_next_{Z_periods}'][index]
+        if max_percentage_price_change >= (X_percentage * allowable_error / 100):
+            detections_within_error.append(index)
+        else:
+            detections_outside_error.append(index)
 
     def correctly_predicted_change(actual, predicted):
         if actual == 1:
@@ -361,21 +379,28 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
                        "Number_Of_Total_Occurences": results['Actual'].sum(),
                        "Number_Of_Correct_Detections": results['Correctly_Predicted_Change'].sum(),
                        "Number_Of_Incorrect_Detections": (results["Residual"] == -1).sum(),
-                       f"Number_of_Occurences_More_Than_{Z_periods}_Periods_Apart": len(
+                       f"Number_of_Grouped_Occurences": len(
                            occurences_more_than_Z_periods_apart(
                                results, column_name='Actual', Z_periods=Z_periods)),
-                       f"Number_of_Detections_More_Than_{Z_periods}_Periods_Apart": len(
+                       f"Number_of_Grouped_Detections": len(
                            occurences_more_than_Z_periods_apart(
                                results, column_name='Predicted', Z_periods=Z_periods)),
-                       f"Number_of_Correct_Detections_More_Than_{Z_periods}_Periods_Apart":
+                       f"Number_of_Grouped_Correct_Detections":
                            len(occurences_more_than_Z_periods_apart(results, column_name='Correctly_Predicted_Change'
                                                                     , Z_periods=Z_periods)),
-                       f"Number_of_Incorrect_Detections_Not_Within_{Z_periods}_Periods_Of_Correct_Detection":
+                       f"Number_of_Grouped_Correct_Detections_Within_Error": len(detections_within_error) +
+                                                                             len(occurences_more_than_Z_periods_apart(
+                                                                                 results,
+                                                                                 column_name='Correctly_Predicted_Change'
+                                                                                 , Z_periods=Z_periods)),
+                       f"Number_of_Grouped_Strictly_Incorrect_Detections":
                            len(incorrect_detections_not_within_Z_periods_of_correct_detection(results, Z_periods)),
-                       "Above_2SD_Correctly_Predicted": above_two_sd_series.sum() / len(above_two_sd_series),
-                       "Above_1SD_Correctly_Predicted": above_one_sd_series.sum() / len(above_one_sd_series),
-                       "Below_2SD_Correctly_Predicted": below_two_sd_series.sum() / len(below_two_sd_series),
-                       "Below_1SD_Correctly_Predicted": below_one_sd_series.sum() / len(below_one_sd_series)}
+                       f"Number_of_Grouped_Incorrect_Detections_Outside_Error":
+                           len(detections_outside_error),
+                       "Above_2SD_Correctly_Predicted": above_two_sd_series.sum(),
+                       "Above_1SD_Correctly_Predicted": above_one_sd_series.sum(),
+                       "Below_2SD_Correctly_Predicted": below_two_sd_series.sum(),
+                       "Below_1SD_Correctly_Predicted": below_one_sd_series.sum()}
 
     print("\nModel: ", model_object)
     print(prediction_dict)

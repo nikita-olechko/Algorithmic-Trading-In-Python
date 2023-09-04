@@ -11,7 +11,7 @@ warning_categories_to_ignore = [PerformanceWarning, RuntimeWarning]
 
 def run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, list_of_tickers,
                                             models_to_run=('lm', 'rf', 'mlp'), barsize="1 min", model_duration="12 M",
-                                            test_duration="2 M"):
+                                            test_duration="2 M", allowable_error=0):
     for Z_periods in list_of_Z_periods:
         for X_percentage in list_of_X_percentages:
             for ticker in list_of_tickers:
@@ -48,7 +48,8 @@ def run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percent
                         analyze_classification_model_performance(ticker=ticker, model_object=model_object,
                                                                  test_data=test_data,
                                                                  model_type=model, Z_periods=Z_periods,
-                                                                 X_percentage=X_percentage)
+                                                                 X_percentage=X_percentage,
+                                                                 allowable_error=allowable_error)
                     print(f"Finished Ticker: {ticker}, Periods: {Z_periods}, Percentage: {X_percentage}")
                 except Exception as e:
                     print(f"Error with {ticker}: {e}")
@@ -59,8 +60,10 @@ list_of_Z_periods = [60, 120]
 list_of_X_percentages = [3, 2, 1]
 list_of_tickers = ['XOM', 'AAPL', 'TSLA', 'MSFT', 'AMZN', 'FB']
 models_to_run = ['rf']
+allowable_error_percentage = 50
 
 # Filter out the specified warning categories
-for warning_category in warning_categories_to_ignore:
-    warnings.filterwarnings("ignore", category=warning_category)
-run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, list_of_tickers, models_to_run)
+# for warning_category in warning_categories_to_ignore:
+#     warnings.filterwarnings("ignore", category=warning_category)
+run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, list_of_tickers, models_to_run,
+                                        allowable_error=allowable_error_percentage)
