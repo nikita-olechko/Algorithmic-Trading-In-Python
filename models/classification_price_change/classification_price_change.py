@@ -27,12 +27,15 @@ def create_log_price_variables(stk_data, list_of_periods=range(1, 11)):
     """
     log_price = np.log(stk_data["Average"])
     stk_data["log_price"] = log_price
+
     for period in list_of_periods:
-        stk_data[f'{period}period_shifted_log_price'] = stk_data["log_price"].shift(period)
-        stk_data[f'{period}period_change_in_log_price'] = stk_data["log_price"] - stk_data[
-            f'{period}period_shifted_log_price']
-        stk_data[f'{period}period_percentage_change_in_log_price'] = stk_data[f'{period}period_change_in_log_price'] \
-                                                                     / stk_data["log_price"].shift(period) * 100
+        shifted_log_price = stk_data["log_price"].shift(period)
+        stk_data[f'{period}period_shifted_log_price'] = shifted_log_price
+        stk_data[f'{period}period_change_in_log_price'] = stk_data["log_price"] - shifted_log_price
+        stk_data[f'{period}period_percentage_change_in_log_price'] = (
+                stk_data[f'{period}period_change_in_log_price'] / shifted_log_price * 100
+        )
+
     return stk_data
 
 
@@ -45,10 +48,12 @@ def create_price_variables(stk_data, list_of_periods=range(1, 11)):
     :return: Modified DataFrame with price change variables.
     """
     for period in list_of_periods:
-        stk_data[f'{period}period_shifted_price'] = stk_data["Average"].shift(period)
-        stk_data[f'{period}period_change_in_price'] = stk_data["Average"] - stk_data[f'{period}period_shifted_price']
-        stk_data[f'{period}period_percentage_change_in_price'] = stk_data[f'{period}period_change_in_price'] \
-                                                                 / stk_data["Average"].shift(period) * 100
+        shifted_price = stk_data["Average"].shift(period)
+        stk_data[f'{period}period_shifted_price'] = shifted_price
+        stk_data[f'{period}period_change_in_price'] = stk_data["Average"] - shifted_price
+        stk_data[f'{period}period_percentage_change_in_price'] = (
+                stk_data[f'{period}period_change_in_price'] / shifted_price * 100
+        )
         stk_data[f'sum_of_absolute_percentage_price_changes_over_{period}_periods'] = stk_data[
             f'{period}period_percentage_change_in_price'].abs().rolling(window=period).sum()
     return stk_data
@@ -65,9 +70,9 @@ def create_volume_change_variables(stk_data, list_of_periods=range(1, 11)):
     log_volume = np.log(stk_data["Volume"])
     stk_data["log_volume"] = log_volume
     for period in list_of_periods:
-        stk_data[f'{period}period_shifted_log_volume'] = stk_data["log_volume"].shift(period)
-        stk_data[f'{period}period_change_in_log_volume'] = stk_data["log_volume"] - stk_data[
-            f'{period}period_shifted_log_volume']
+        shifted_log_volume = stk_data["log_volume"].shift(period)
+        stk_data[f'{period}period_shifted_log_volume'] = shifted_log_volume
+        stk_data[f'{period}period_change_in_log_volume'] = stk_data["log_volume"] - shifted_log_volume
     return stk_data
 
 
@@ -111,9 +116,10 @@ def boolean_bollinger_band_location(minuteDataFrame):
 
 
 def price_change_over_next_Z_periods_greater_than_X_boolean(dataFrame, periods, percentage_change):
-    dataFrame['Max_Price_in_Next_Z_Periods'] = dataFrame['Average'].rolling(periods).max().shift(-(periods-1))
+    dataFrame['Max_Price_in_Next_Z_Periods'] = dataFrame['Average'].rolling(periods).max().shift(-(periods - 1))
     dataFrame[f'maximum_percentage_price_change_over_next_{periods}_periods_greater_than_{percentage_change}'] = \
-        ((dataFrame['Max_Price_in_Next_Z_Periods'] - dataFrame['Average']) / dataFrame['Average']) * 100 >= percentage_change
+        ((dataFrame['Max_Price_in_Next_Z_Periods'] - dataFrame['Average']) / dataFrame[
+            'Average']) * 100 >= percentage_change
     dataFrame.drop(['Max_Price_in_Next_Z_Periods'], axis=1, inplace=True)
     return dataFrame
 
