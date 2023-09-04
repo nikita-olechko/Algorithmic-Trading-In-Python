@@ -31,27 +31,26 @@ def incorrect_detections_not_within_Z_periods_of_correct_detection(dataframe, Z_
     return incorrect_detections
 
 
-def incorrect_detection_within_allowable_error(results_dataframe, max_percent_change, Z_periods, X_percentage, allowable_error):
-
+def incorrect_detection_within_allowable_error(results_dataframe, max_percent_change, Z_periods, X_percentage,
+                                               allowable_error):
     # we need the predicted values
     # we need the actual percentages
     predicted_indices = list(results_dataframe[results_dataframe['Predicted'] == 1].index)
     percent_changes_at_predicted_indices = results_dataframe.loc[predicted_indices, 'Percent Change']
 
 
-
-def create_classification_report_name(Z_periods=60, X_percentage=3, model_type='lm'):
+def create_classification_report_name(Z_periods=60, X_percentage=3, model_type='lm', allowable_error=""):
     """
     A function to return the classification report name. Must be called in the directory above model_performance.
     """
-    return f'model_performance/classification_price_change_{model_type}_{Z_periods}_periods_{X_percentage}_percent.csv'
+    return f'model_performance/classification_price_change_{model_type}_{Z_periods}_periods_{X_percentage}_percent_threshold_{allowable_error}_percent_error.csv'
 
 
-def model_exists(Z_periods=60, X_percentage=3, model_type='lm'):
+def model_exists(Z_periods=60, X_percentage=3, model_type='lm', allowable_error=""):
     """
     A function to check if a model exists. Must be called in the directory above model_performance.
     """
-    return os.path.isfile(create_classification_report_name(Z_periods, X_percentage, model_type))
+    return os.path.isfile(create_classification_report_name(Z_periods, X_percentage, model_type, allowable_error))
 
 
 def get_model(model_creation_dict, model_type, symbol, Z_periods, X_percentage, barsize, duration, model_data=None,

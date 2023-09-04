@@ -405,7 +405,7 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
     print("\nModel: ", model_object)
     print(prediction_dict)
 
-    model_results_file = create_classification_report_name(Z_periods, X_percentage, model_type)
+    model_results_file = create_classification_report_name(Z_periods, X_percentage, model_type, allowable_error)
 
     if os.path.isfile(os.path.join(model_results_file)):
         try:
