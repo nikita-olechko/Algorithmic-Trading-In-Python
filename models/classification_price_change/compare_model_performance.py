@@ -11,7 +11,7 @@ warning_categories_to_ignore = [PerformanceWarning, RuntimeWarning]
 
 def run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, list_of_tickers,
                                             models_to_run=('lm', 'rf', 'mlp'), barsize="1 min", model_duration="12 M",
-                                            test_duration="2 M", allowable_error=0):
+                                            test_duration="2 M", allowable_error=0, periodicity=1):
     for Z_periods in list_of_Z_periods:
         for X_percentage in list_of_X_percentages:
             for ticker in list_of_tickers:
@@ -25,13 +25,15 @@ def run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percent
                                                                                             test_duration.split(" ")[
                                                                                                 0]) + 1,
                                                                                         very_large_data=True,
-                                                                                        try_errored_tickers=True)
+                                                                                        try_errored_tickers=True,
+                                                                                        periodicity=periodicity)
 
                     test_data = prepare_data_classification_model(barsize=barsize, duration=test_duration,
                                                                   ticker=ticker,
                                                                   Z_periods=Z_periods, X_percentage=X_percentage,
                                                                   months_offset=0, very_large_data=True,
-                                                                  try_errored_tickers=True)[0]
+                                                                  try_errored_tickers=True,
+                                                                  periodicity=periodicity)[0]
 
                     model_data_tuple = (model_data, x_columns, y_column)
 
@@ -61,6 +63,7 @@ list_of_X_percentages = [3, 2, 1]
 list_of_tickers = ['XOM', 'AAPL', 'TSLA', 'MSFT', 'AMZN', 'FB']
 models_to_run = ['lm', 'rf']
 allowable_error_percentage = 50
+periodicity = 1
 model_duration = "16 M"
 test_duration = "3 M"
 
@@ -69,4 +72,5 @@ test_duration = "3 M"
 #     warnings.filterwarnings("ignore", category=warning_category)
 run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, list_of_tickers, models_to_run,
                                         model_duration=model_duration, test_duration=test_duration,
+                                        periodicity=periodicity,
                                         allowable_error=allowable_error_percentage)

@@ -126,7 +126,7 @@ def price_change_over_next_Z_periods_greater_than_X_boolean(dataFrame, periods, 
 
 def prepare_data_classification_model(ticker, barsize, duration, endDateTime='', data=None,
                                       Z_periods=60, X_percentage=3, months_offset=0, very_large_data=False,
-                                      try_errored_tickers=True):
+                                      try_errored_tickers=True, periodicity=1):
     """
     Prepare training data for machine learning models.
     """
@@ -136,9 +136,9 @@ def prepare_data_classification_model(ticker, barsize, duration, endDateTime='',
         stk_data = retrieve_base_data(ib, ticker, barsize, duration, directory_offset=2,
                                       endDateTime=endDateTime, months_offset=months_offset,
                                       very_large_data=very_large_data, try_errored_tickers=try_errored_tickers)
-    stk_data = create_log_price_variables(stk_data, list_of_periods=range(1, Z_periods))
-    stk_data = create_price_variables(stk_data, list_of_periods=range(1, Z_periods))
-    stk_data = create_volume_change_variables(stk_data, list_of_periods=range(1, Z_periods))
+    stk_data = create_log_price_variables(stk_data, list_of_periods=range(1, Z_periods, periodicity))
+    stk_data = create_price_variables(stk_data, list_of_periods=range(1, Z_periods, periodicity))
+    stk_data = create_volume_change_variables(stk_data, list_of_periods=range(1, Z_periods, periodicity))
     stk_data = generate_bollinger_bands(stk_data)
     stk_data = boolean_bollinger_band_location(stk_data)
     # Y Variable
