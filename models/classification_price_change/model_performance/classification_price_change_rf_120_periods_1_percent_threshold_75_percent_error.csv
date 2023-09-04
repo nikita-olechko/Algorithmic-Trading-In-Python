@@ -1,0 +1,6 @@
+,ticker,Overall_Correct_Prediction_When_Detected,Number_Of_Total_Occurences,Number_Of_Correct_Detections,Number_Of_Incorrect_Detections,Number_of_Grouped_Occurences,Number_of_Grouped_Detections,Number_of_Grouped_Correct_Detections,Number_of_Grouped_Correct_Detections_Within_Error,Number_of_Grouped_Strictly_Incorrect_Detections,Number_of_Grouped_Incorrect_Detections_Outside_Error,Above_2SD_Correctly_Predicted,Above_1SD_Correctly_Predicted,Below_2SD_Correctly_Predicted,Below_1SD_Correctly_Predicted
+0,XOM,0.3040364583333333,3441,1401,3207,46,58,34,36,34,32,100,328,90,282
+1,AAPL,0.0,1771,0,7,29,4,0,1,3,2,0,0,0,0
+2,TSLA,0.4054246966452534,8900,3408,4998,38,40,55,65,21,11,224,829,223,628
+3,MSFT,0.2608695652173913,3248,24,68,44,3,1,3,3,1,3,14,0,0
+4,AMZN,0.24647887323943662,4092,875,2675,52,62,37,43,27,21,49,165,78,191
