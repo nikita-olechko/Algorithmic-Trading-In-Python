@@ -30,7 +30,7 @@ def run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percent
                     test_data = prepare_data_classification_model(barsize=barsize, duration=test_duration,
                                                                   ticker=ticker,
                                                                   Z_periods=Z_periods, X_percentage=X_percentage,
-                                                                  months_offset=0, very_large_data=False,
+                                                                  months_offset=0, very_large_data=True,
                                                                   try_errored_tickers=True)[0]
 
                     model_data_tuple = (model_data, x_columns, y_column)
@@ -59,11 +59,14 @@ def run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percent
 list_of_Z_periods = [60, 120]
 list_of_X_percentages = [3, 2, 1]
 list_of_tickers = ['XOM', 'AAPL', 'TSLA', 'MSFT', 'AMZN', 'FB']
-models_to_run = ['rf']
+models_to_run = ['lm', 'rf']
 allowable_error_percentage = 50
+model_duration = "16 M"
+test_duration = "3 M"
 
 # Filter out the specified warning categories
 # for warning_category in warning_categories_to_ignore:
 #     warnings.filterwarnings("ignore", category=warning_category)
 run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, list_of_tickers, models_to_run,
+                                        model_duration=model_duration, test_duration=test_duration,
                                         allowable_error=allowable_error_percentage)
