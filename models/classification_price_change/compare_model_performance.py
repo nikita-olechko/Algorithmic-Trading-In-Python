@@ -58,18 +58,19 @@ def run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percent
                     continue
 
 
-list_of_Z_periods = [60, 120]
-list_of_X_percentages = [3, 2, 1]
-list_of_tickers = ['XOM', 'AAPL', 'TSLA', 'MSFT', 'AMZN', 'FB']
-models_to_run = ['lm', 'rf']
-allowable_error_percentage = 50
+list_of_Z_periods = [120]
+list_of_X_percentages = [1.5, 1]
+list_of_tickers = ['XOM', 'AAPL', 'TSLA', 'MSFT', 'AMZN']
+extra_tickers = ["TSLA", "NIO", "PLTR", "ROKU", "ZM", "MRNA", "SPCE", "NKLA", "ZI", "SNOW", "PTON", "GME", "AMC", "PLUG"]
+models_to_run = ['rf']
+allowable_error_percentage = 75
 periodicity = 1
-model_duration = "16 M"
+model_duration = "12 M"
 test_duration = "3 M"
 
 # Filter out the specified warning categories
-# for warning_category in warning_categories_to_ignore:
-#     warnings.filterwarnings("ignore", category=warning_category)
+for warning_category in warning_categories_to_ignore:
+    warnings.filterwarnings("ignore", category=warning_category)
 run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, list_of_tickers, models_to_run,
                                         model_duration=model_duration, test_duration=test_duration,
                                         periodicity=periodicity,
