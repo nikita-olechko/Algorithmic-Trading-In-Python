@@ -61,7 +61,8 @@ def run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percent
 list_of_Z_periods = [120, 180]
 list_of_X_percentages = [1.5, 1]
 list_of_tickers = ['XOM', 'TSLA', 'MSFT', 'AMZN']
-extra_tickers = ["TSLA", "NIO", "PLTR", "ROKU", "ZM", "MRNA", "SPCE", "NKLA", "ZI", "SNOW", "PTON", "GME", "AMC", "PLUG"]
+extra_tickers = ["TSLA", "NIO", "PLTR", "ROKU", "ZM", "MRNA", "SPCE", "NKLA", "ZI", "SNOW",
+                 "PTON", "GME", "AMC", "PLUG"] + ['NKLA', 'SPCE', 'PTON']
 complete_list_of_tickers = list_of_tickers + extra_tickers
 models_to_run = ['rf']
 allowable_error_percentage = 75
