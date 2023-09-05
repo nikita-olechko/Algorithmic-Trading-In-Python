@@ -5,10 +5,12 @@ from utilities.classification_utilities import get_model
 from classification_price_change import create_classification_price_change_logistic_regression_model, \
     create_classification_price_change_random_forest_model, create_classification_price_change_mlp_model, \
     analyze_classification_model_performance, prepare_data_classification_model
+from utilities.generalUtilities import timer
 
 warning_categories_to_ignore = [PerformanceWarning, RuntimeWarning]
 
 
+@timer
 def run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, list_of_tickers,
                                             models_to_run=('lm', 'rf', 'mlp'), barsize="1 min", model_duration="12 M",
                                             test_duration="2 M", allowable_error=0, periodicity=1):
