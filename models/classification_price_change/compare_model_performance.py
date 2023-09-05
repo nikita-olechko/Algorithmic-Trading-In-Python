@@ -53,7 +53,10 @@ def run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percent
                                                                  test_data=test_data,
                                                                  model_type=model, Z_periods=Z_periods,
                                                                  X_percentage=X_percentage,
-                                                                 allowable_error=allowable_error)
+                                                                 allowable_error=allowable_error,
+                                                                 model_data_range=
+                                                                 f"{list(model_data['Date'])[0]} to "
+                                                                 f"{list(model_data['Date'])[-1]}")
                     print(f"Finished Ticker: {ticker}, Periods: {Z_periods}, Percentage: {X_percentage}")
                 except Exception as e:
                     print(f"Error with {ticker}: {e}")
@@ -66,7 +69,7 @@ list_of_tickers = ['XOM', 'TSLA', 'MSFT', 'AMZN']
 extra_tickers = ["TSLA", "NIO", "PLTR", "ROKU", "ZM", "MRNA", "SPCE", "NKLA", "ZI", "SNOW",
                  "PTON", "GME", "AMC", "PLUG"] + ['NKLA', 'SPCE', 'PTON']
 complete_list_of_tickers = list_of_tickers + extra_tickers
-models_to_run = ['lm']
+models_to_run = ['rf']
 allowable_error_percentage = 75
 periodicity = 1
 model_duration = "12 M"
