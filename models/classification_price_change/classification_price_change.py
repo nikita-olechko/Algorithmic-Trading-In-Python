@@ -272,6 +272,15 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
             return predicted
         return np.nan
 
+    indices_after_detection_outside_error = [index + Z_periods for index in detections_outside_error]
+
+    price_at_detection_outside_error = data['Average'][detections_outside_error]
+    price_at_detection_after_Z_periods = data['Average'][indices_after_detection_outside_error]
+
+    price_change_after_Z_periods_incorrect_detection = [price_at_detection_after_Z_periods[index] -
+                                                        price_at_detection_outside_error[index]
+                                                        for index in range(len(price_at_detection_outside_error))]
+
     results['Correctly_Predicted_Change'] = results.apply(
         lambda x: correctly_predicted_change(x['Actual'], x['Predicted']),
         axis=1)
@@ -311,14 +320,18 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
                            len(occurences_more_than_Z_periods_apart(results, column_name='Correctly_Predicted_Change'
                                                                     , Z_periods=Z_periods)),
                        f"Grouped_Correct_Detections_Within_Error": len(detections_within_error) +
-                                                                             len(occurences_more_than_Z_periods_apart(
-                                                                                 results,
-                                                                                 column_name='Correctly_Predicted_Change'
-                                                                                 , Z_periods=Z_periods)),
+                                                                   len(occurences_more_than_Z_periods_apart(
+                                                                       results,
+                                                                       column_name='Correctly_Predicted_Change'
+                                                                       , Z_periods=Z_periods)),
                        f"Grouped_Strictly_Incorrect_Detections":
                            len(incorrect_detections_not_within_Z_periods_of_correct_detection(results, Z_periods)),
                        f"Grouped_Incorrect_Detections_Outside_Error":
                            len(detections_outside_error),
+                       "Grouped_Average_Incorrect_Detection_Price_Change": np.mean(
+                           price_change_after_Z_periods_incorrect_detection),
+                       "Grouped_Standard_Deviation_Incorrect_Detection_Price_Change": np.std(
+                           price_change_after_Z_periods_incorrect_detection),
                        "Test_Data_Range": f"{data['Date'][0]} to {data['Date'][-1]}",
                        "Above_2SD_Correctly_Predicted": above_two_sd_series.sum(),
                        "Above_1SD_Correctly_Predicted": above_one_sd_series.sum(),
