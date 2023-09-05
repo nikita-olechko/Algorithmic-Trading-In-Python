@@ -376,26 +376,26 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
     prediction_dict = {"ticker": ticker,
                        "Overall_Correct_Prediction_When_Detected": results['Correctly_Predicted_Change'].sum() /
                                                                    results['Predicted'].sum(),
-                       "Number_Of_Total_Occurences": results['Actual'].sum(),
-                       "Number_Of_Correct_Detections": results['Correctly_Predicted_Change'].sum(),
-                       "Number_Of_Incorrect_Detections": (results["Residual"] == -1).sum(),
-                       f"Number_of_Grouped_Occurences": len(
+                       "Total_Occurences": results['Actual'].sum(),
+                       "Correct_Detections": results['Correctly_Predicted_Change'].sum(),
+                       "Incorrect_Detections": (results["Residual"] == -1).sum(),
+                       f"Grouped_Occurences": len(
                            occurences_more_than_Z_periods_apart(
                                results, column_name='Actual', Z_periods=Z_periods)),
-                       f"Number_of_Grouped_Detections": len(
+                       f"Grouped_Detections": len(
                            occurences_more_than_Z_periods_apart(
                                results, column_name='Predicted', Z_periods=Z_periods)),
-                       f"Number_of_Grouped_Correct_Detections":
+                       f"Grouped_Correct_Detections":
                            len(occurences_more_than_Z_periods_apart(results, column_name='Correctly_Predicted_Change'
                                                                     , Z_periods=Z_periods)),
-                       f"Number_of_Grouped_Correct_Detections_Within_Error": len(detections_within_error) +
+                       f"Grouped_Correct_Detections_Within_Error": len(detections_within_error) +
                                                                              len(occurences_more_than_Z_periods_apart(
                                                                                  results,
                                                                                  column_name='Correctly_Predicted_Change'
                                                                                  , Z_periods=Z_periods)),
-                       f"Number_of_Grouped_Strictly_Incorrect_Detections":
+                       f"Grouped_Strictly_Incorrect_Detections":
                            len(incorrect_detections_not_within_Z_periods_of_correct_detection(results, Z_periods)),
-                       f"Number_of_Grouped_Incorrect_Detections_Outside_Error":
+                       f"Grouped_Incorrect_Detections_Outside_Error":
                            len(detections_outside_error),
                        "Above_2SD_Correctly_Predicted": above_two_sd_series.sum(),
                        "Above_1SD_Correctly_Predicted": above_one_sd_series.sum(),
