@@ -325,7 +325,8 @@ def order_selector(order):
         "1": buy_order,
         "-1": sell_order,
         "2": hold_order,
-        "0": nothing_order
+        "0": nothing_order,
+        "3": hold_and_reset_conditions
     }
     return order_dict[order]
 
@@ -352,4 +353,10 @@ def hold_order(stk_data, index, last_order_index):
 
 def nothing_order(stk_data, index, last_order_index):
     stk_data.at[index, 'Position'] = stk_data.at[index - 1, 'Position']
+    return stk_data, last_order_index
+
+
+def hold_and_reset_conditions(stk_data, index, last_order_index):
+    stk_data.at[index, 'Orders'] = 2
+    last_order_index = index
     return stk_data, last_order_index

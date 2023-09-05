@@ -18,12 +18,17 @@ def classification_model_strategy(barDataFrame, last_order_index=0, current_inde
     """
     A strategy that searches for periods where the price has gone down > 1% in 10 periods
     """
+    current_prediction = barDataFrame.loc[barDataFrame.index[current_index], 'Prediction']
     if barDataFrame["Orders"][last_order_index] == 1:
         if profit_taker(barDataFrame, last_order_index, current_index, 1.5):
+            if current_prediction == 1:
+                return 3
             return -1
         if minutes_since_last_order(barDataFrame, last_order_index, current_index) > 120:
+            if current_prediction == 1:
+                return 3
             return -1
         return 2
-    if barDataFrame.loc[barDataFrame.index[current_index], 'Prediction'] == 1:
+    if current_prediction == 1:
         return 1
     return 0
