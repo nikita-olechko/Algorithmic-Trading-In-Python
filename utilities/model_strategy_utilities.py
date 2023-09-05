@@ -10,12 +10,10 @@ def predict_based_on_model(barDataFrame, model_object):
     for column in always_redundant_columns:
         x_columns.remove(column)
 
-    data = barDataFrame.dropna()
+    barDataFrame = barDataFrame.dropna()
+    barDataFrame.reset_index(drop=True, inplace=True)
 
-    x_test = data[x_columns]
-
-    predict_price_change = model_object.predict(x_test)
+    predict_price_change = model_object.predict(barDataFrame[x_columns])
     predict_price_change = predict_price_change.reshape(-1, 1)
-    predict_price_change = pd.DataFrame(predict_price_change, columns=['Prediction'])
     barDataFrame['Prediction'] = predict_price_change
     return barDataFrame
