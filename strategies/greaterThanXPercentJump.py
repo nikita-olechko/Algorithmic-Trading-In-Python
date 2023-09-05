@@ -1,5 +1,7 @@
 import math
 
+from strategies.general_strategy_utilities import profit_taker, stop_loss
+
 
 def calculate_log_price(barDataFrame):
     barDataFrame['LogPrice'] = barDataFrame['Average'].apply(lambda x: math.log(x))
@@ -27,32 +29,6 @@ def generate_price_shifts_backtest(barDataFrame):
     # barDataFrame = generate_change_in_log_price_shift_X(barDataFrame, x=10)
     barDataFrame = calculate_change_in_price(barDataFrame, x=10)
     return barDataFrame
-
-
-def profit_taker(barDataFrame, last_order_index, current_index):
-    """
-    A function that sees if we have bounced back more than 0.75% from our 1% drop
-    """
-    if percentage_price_change_since_last_order(barDataFrame, last_order_index, current_index) > 0.75:
-        return True
-    else:
-        return False
-
-
-def stop_loss(barDataFrame, last_order_index, current_index):
-    """
-    A function that sees if we have dropped more than 1% from our buy price
-    """
-    if percentage_price_change_since_last_order(barDataFrame, last_order_index, current_index) < -1:
-        return True
-    else:
-        return False
-
-
-def percentage_price_change_since_last_order(barDataFrame, last_order_index, current_index):
-    return (barDataFrame.loc[barDataFrame.index[current_index], 'Average'] - barDataFrame.loc[
-        barDataFrame.index[last_order_index],
-        'Average']) / barDataFrame.loc[barDataFrame.index[current_index], 'Average'] * 100
 
 
 def percentage_price_change_strategy(barDataFrame, last_order_index=0, current_index=-1, ticker=None):
