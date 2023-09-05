@@ -13,7 +13,6 @@ def run_strategy_on_list_of_tickers(strategy, strategy_buy_or_sell_condition_fun
                                     initializing_order=1,
                                     directory_offset=1, months_offset=0, very_large_data=False,
                                     ticker_limit=None, try_errored_tickers=False,
-                                    model=None,
                                     *args, **kwargs):
     """
         Run a trading strategy on a list of tickers using historical data.
@@ -60,6 +59,9 @@ def run_strategy_on_list_of_tickers(strategy, strategy_buy_or_sell_condition_fun
         :param try_errored_tickers: Whether to try processing tickers that previously encountered errors. Default is False.
         :type try_errored_tickers: bool
 
+        :param model: The model to pass to your data generation function. Default is None.
+        :type model: any model or None
+
         :param args: Additional positional arguments passed to strategy functions.
         :param kwargs: Additional keyword arguments passed to strategy functions.
     """
@@ -98,7 +100,7 @@ def run_strategy_on_list_of_tickers(strategy, strategy_buy_or_sell_condition_fun
         if stk_data is not None:
             summary_df = simulate_trading_on_strategy(stk_data, ticker, strategy_buy_or_sell_condition_function,
                                                       generate_additional_data_function=generate_additional_data_function,
-                                                      initializing_order=initializing_order, model=model
+                                                      initializing_order=initializing_order,
                                                       *args, **kwargs)
             all_tickers_summary = pd.concat([all_tickers_summary, summary_df])
             all_tickers_summary.to_csv(summary_file_path_name, index=False)
@@ -108,12 +110,9 @@ def run_strategy_on_list_of_tickers(strategy, strategy_buy_or_sell_condition_fun
 
 def simulate_trading_on_strategy(stk_data, ticker, strategy_buy_or_sell_condition_function,
                                  generate_additional_data_function=None,
-                                 initializing_order=1, model=None, *args, **kwargs):
+                                 initializing_order=1, *args, **kwargs):
     if generate_additional_data_function is not None:
-        if model is not None:
-            stk_data = generate_additional_data_function(stk_data, model)
-        else:
-            stk_data = generate_additional_data_function(stk_data)
+        stk_data = generate_additional_data_function(stk_data, *args, **kwargs)
 
     last_order_index = 0
 
@@ -122,7 +121,7 @@ def simulate_trading_on_strategy(stk_data, ticker, strategy_buy_or_sell_conditio
             continue
         # Get order based on strategy conditions
         order = strategy_buy_or_sell_condition_function(stk_data[:index], ticker=ticker, current_index=index,
-                                                        last_order_index=last_order_index, *args, **kwargs)
+                                                        last_order_index=last_order_index)
 
         # If this is the first order, wait until first Buy order to establish the position
         if last_order_index == 0:
