@@ -13,7 +13,7 @@ import time
 from liveTrading.customOrders import marketBuyOrder, marketSellOrder
 from utilities.dataGenerationUtilities import average_bars_by_minute
 from utilities.generalUtilities import get_starter_order_id, get_tws_connection_id
-from liveTrading.liveTradingUtilities import create_stock_contract_object, holding_gross_return, \
+from utilities.liveTradingUtilities import create_stock_contract_object, holding_gross_return, \
     calculate_current_return
 
 

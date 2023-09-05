@@ -11,7 +11,7 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.neural_network import MLPClassifier
 
 from backtesting.backtestingUtilities.simulationUtilities import retrieve_base_data
-from models.classification_price_change.classification_utilities import create_classification_report_name, \
+from utilities.classification_utilities import create_classification_report_name, \
     occurences_more_than_Z_periods_apart, incorrect_detections_not_within_Z_periods_of_correct_detection
 from utilities.__init__ import DATE_FORMAT
 from utilities.generalUtilities import initialize_ib_connection, timer

@@ -73,3 +73,14 @@ def get_model(model_creation_dict, model_type, symbol, Z_periods, X_percentage, 
                                                 barsize=barsize, duration=duration,
                                                 prepped_data_column_tuple=prepped_data_column_tuple)
     return model
+
+
+def get_model_object(symbol = 'NKLA', model_barsize = '1 min', model_duration = '12 M', Z_periods = 120,
+                     X_percentage = 1.5, periodicity = 1):
+    # model_file_path = model_file_path(symbol, model_barsize, model_duration, Z_periods, X_percentage,
+    #                                   model_type='rf', directory_offset=1)
+    model_file = model_file_path(symbol, model_barsize, model_duration, Z_periods, X_percentage,
+                                        model_type='rf', directory_offset=1)
+
+    model_object = pickle.load(open(model_file, 'rb'))
+    return model_object

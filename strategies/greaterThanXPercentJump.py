@@ -1,6 +1,6 @@
 import math
 
-from strategies.general_strategy_utilities import profit_taker, stop_loss
+from utilities.general_strategy_utilities import profit_taker, stop_loss
 
 
 def calculate_log_price(barDataFrame):
