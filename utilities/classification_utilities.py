@@ -48,7 +48,8 @@ def model_file_path(symbol, barsize, duration, Z_periods, X_percentage, model_ty
     # Calculate the new directory path with offset
     current_directory = os.path.abspath(os.path.join(current_directory, "../" * directory_offset))
     folder_path = os.path.join(current_directory, "models/classification_price_change")
-    file_name = get_model_name(symbol, barsize, duration, Z_periods=Z_periods, X_percentage=X_percentage, model_type=model_type)
+    file_name = get_model_name(symbol, barsize, duration, Z_periods=Z_periods, X_percentage=X_percentage,
+                               model_type=model_type)
     return os.path.join(folder_path, file_name)
 
 
@@ -75,12 +76,10 @@ def get_model(model_creation_dict, model_type, symbol, Z_periods, X_percentage, 
     return model
 
 
-def get_model_object(symbol = 'NKLA', model_barsize = '1 min', model_duration = '12 M', Z_periods = 120,
-                     X_percentage = 1.5, periodicity = 1):
-    # model_file_path = model_file_path(symbol, model_barsize, model_duration, Z_periods, X_percentage,
-    #                                   model_type='rf', directory_offset=1)
+def get_model_object(symbol='NKLA', model_barsize='1 min', model_duration='12 M', Z_periods=120,
+                     X_percentage=1.5):
     model_file = model_file_path(symbol, model_barsize, model_duration, Z_periods, X_percentage,
-                                        model_type='rf', directory_offset=1)
+                                 model_type='rf', directory_offset=1)
 
     model_object = pickle.load(open(model_file, 'rb'))
     return model_object
