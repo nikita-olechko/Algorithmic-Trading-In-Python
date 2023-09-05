@@ -4,7 +4,6 @@ import pandas as pd
 
 from models.classification_price_change.classification_price_change import create_log_price_variables, \
     create_price_variables, create_volume_change_variables, generate_bollinger_bands, boolean_bollinger_band_location
-from utilities.classification_utilities import get_model_object
 from utilities.general_strategy_utilities import profit_taker, minutes_since_last_order
 
 
