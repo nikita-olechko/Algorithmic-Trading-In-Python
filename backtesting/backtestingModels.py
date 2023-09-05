@@ -3,8 +3,8 @@ from strategies.classification_price_change_single_stock import generate_model_d
 from utilities.classification_utilities import get_model_object
 
 strategy_name = 'ClassificationModel_1.5_PercentThreshold'
-strategy_condition_function = generate_model_data
-generate_data_function = classification_model_strategy
+strategy_condition_function = classification_model_strategy
+generate_data_function = generate_model_data
 barsize = "1 min"
 duration = "3 M"
 model_barsize = '1 min'
@@ -20,5 +20,6 @@ for symbol in ['NKLA', 'SPCE', 'PTON', 'AMC', 'PLUG']:
                                     strategy_buy_or_sell_condition_function=strategy_condition_function,
                                     generate_additional_data_function=generate_data_function,
                                     barsize=barsize, duration=duration, list_of_tickers=[symbol],
-                                    very_large_data=True, try_errored_tickers=True, model_object=model_object
+                                    very_large_data=True, try_errored_tickers=True, model_object=model_object,
+                                    Z_periods=Z_periods
                                     )
