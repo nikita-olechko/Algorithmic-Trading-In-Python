@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def predict_based_on_model(barDataFrame, model_object):
     x_columns = list(barDataFrame.columns)
 

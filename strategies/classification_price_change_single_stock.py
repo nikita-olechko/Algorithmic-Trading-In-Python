@@ -1,30 +1,12 @@
 import pickle
 
+import numpy as np
 import pandas as pd
 
 from utilities.dataGenerationUtilities import create_price_variables, create_log_price_variables, \
     create_volume_change_variables, generate_bollinger_bands, boolean_bollinger_band_location
 from utilities.general_strategy_utilities import profit_taker, minutes_since_last_order
-
-
-def predict_based_on_model(barDataFrame, model_object):
-    x_columns = list(barDataFrame.columns)
-
-    always_redundant_columns = ['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount', 'Orders',
-                                'Position']
-
-    for column in always_redundant_columns:
-        x_columns.remove(column)
-
-    data = barDataFrame.dropna()
-
-    x_test = data[x_columns]
-
-    predict_price_change = model_object.predict(x_test)
-    predict_price_change = predict_price_change.reshape(-1, 1)
-    predict_price_change = pd.DataFrame(predict_price_change, columns=['Model_Prediction'])
-    barDataFrame['Model_Prediction'] = predict_price_change
-    return barDataFrame
+from utilities.model_strategy_utilities import predict_based_on_model
 
 
 def generate_model_data(barDataFrame, model_object=None, Z_periods=120, periodicity=1):
