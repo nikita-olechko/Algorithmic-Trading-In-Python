@@ -397,6 +397,7 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
                            len(incorrect_detections_not_within_Z_periods_of_correct_detection(results, Z_periods)),
                        f"Grouped_Incorrect_Detections_Outside_Error":
                            len(detections_outside_error),
+                       "Test_Data_Range": f"{data['Date'][0]} to {data['Date'][-1]}",
                        "Above_2SD_Correctly_Predicted": above_two_sd_series.sum(),
                        "Above_1SD_Correctly_Predicted": above_one_sd_series.sum(),
                        "Below_2SD_Correctly_Predicted": below_two_sd_series.sum(),
