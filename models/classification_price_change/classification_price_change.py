@@ -272,13 +272,20 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
             return predicted
         return np.nan
 
+    detections_outside_error_copy = detections_outside_error.copy()
+
     indices_after_detection_outside_error = [index + Z_periods for index in detections_outside_error]
+    if indices_after_detection_outside_error[-1] > len(data):
+        indices_after_detection_outside_error = indices_after_detection_outside_error[:-1]
+        detections_outside_error_copy = detections_outside_error[:-1]
 
-    price_at_detection_outside_error = data['Average'][detections_outside_error]
-    price_at_detection_after_Z_periods = data['Average'][indices_after_detection_outside_error]
+    price_at_detection_outside_error = list(data['Average'][detections_outside_error_copy])
+    price_at_detection_after_Z_periods = list(data['Average'][indices_after_detection_outside_error])
 
-    price_change_after_Z_periods_incorrect_detection = [price_at_detection_after_Z_periods[index] -
-                                                        price_at_detection_outside_error[index]
+
+    price_change_percentage_after_Z_periods_incorrect_detection = [(price_at_detection_after_Z_periods[index] -
+                                                        price_at_detection_outside_error[index]) / \
+                                                        price_at_detection_outside_error[index] * 100
                                                         for index in range(len(price_at_detection_outside_error))]
 
     results['Correctly_Predicted_Change'] = results.apply(
@@ -329,10 +336,10 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
                        f"Grouped_Incorrect_Detections_Outside_Error":
                            len(detections_outside_error),
                        "Grouped_Average_Incorrect_Detection_Price_Change": np.mean(
-                           price_change_after_Z_periods_incorrect_detection),
+                           price_change_percentage_after_Z_periods_incorrect_detection),
                        "Grouped_Standard_Deviation_Incorrect_Detection_Price_Change": np.std(
-                           price_change_after_Z_periods_incorrect_detection),
-                       "Test_Data_Range": f"{data['Date'][0]} to {data['Date'][-1]}",
+                           price_change_percentage_after_Z_periods_incorrect_detection),
+                       "Test_Data_Range": f"{list(data['Date'])[0]} to {list(data['Date'])[-1]}",
                        "Above_2SD_Correctly_Predicted": above_two_sd_series.sum(),
                        "Above_1SD_Correctly_Predicted": above_one_sd_series.sum(),
                        "Below_2SD_Correctly_Predicted": below_two_sd_series.sum(),
