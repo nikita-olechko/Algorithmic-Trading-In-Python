@@ -13,6 +13,7 @@ def run_strategy_on_list_of_tickers(strategy, strategy_buy_or_sell_condition_fun
                                     initializing_order=1,
                                     directory_offset=1, months_offset=0, very_large_data=False,
                                     ticker_limit=None, try_errored_tickers=False,
+                                    model=None,
                                     *args, **kwargs):
     """
         Run a trading strategy on a list of tickers using historical data.
@@ -97,7 +98,7 @@ def run_strategy_on_list_of_tickers(strategy, strategy_buy_or_sell_condition_fun
         if stk_data is not None:
             summary_df = simulate_trading_on_strategy(stk_data, ticker, strategy_buy_or_sell_condition_function,
                                                       generate_additional_data_function=generate_additional_data_function,
-                                                      initializing_order=initializing_order,
+                                                      initializing_order=initializing_order, model=model
                                                       *args, **kwargs)
             all_tickers_summary = pd.concat([all_tickers_summary, summary_df])
             all_tickers_summary.to_csv(summary_file_path_name, index=False)
@@ -107,9 +108,12 @@ def run_strategy_on_list_of_tickers(strategy, strategy_buy_or_sell_condition_fun
 
 def simulate_trading_on_strategy(stk_data, ticker, strategy_buy_or_sell_condition_function,
                                  generate_additional_data_function=None,
-                                 initializing_order=1, *args, **kwargs):
+                                 initializing_order=1, model=None, *args, **kwargs):
     if generate_additional_data_function is not None:
-        stk_data = generate_additional_data_function(stk_data)
+        if model is not None:
+            stk_data = generate_additional_data_function(stk_data, model)
+        else:
+            stk_data = generate_additional_data_function(stk_data)
 
     last_order_index = 0
 
