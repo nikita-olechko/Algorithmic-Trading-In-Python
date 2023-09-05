@@ -14,87 +14,9 @@ from backtesting.backtestingUtilities.simulationUtilities import retrieve_base_d
 from utilities.classification_utilities import create_classification_report_name, \
     occurences_more_than_Z_periods_apart, incorrect_detections_not_within_Z_periods_of_correct_detection
 from utilities.__init__ import DATE_FORMAT
+from utilities.dataGenerationUtilities import create_volume_change_variables, create_price_variables, \
+    create_log_price_variables, generate_bollinger_bands
 from utilities.generalUtilities import initialize_ib_connection, timer
-
-
-def create_log_price_variables(stk_data, list_of_periods=range(1, 11)):
-    """
-    Create log price and related variables for a given DataFrame.
-
-    :param stk_data: DataFrame containing stock data.
-    :param list_of_periods: List of periods to calculate shifted log prices.
-    :return: Modified DataFrame with log price variables.
-    """
-    log_price = np.log(stk_data["Average"])
-    stk_data["log_price"] = log_price
-
-    for period in list_of_periods:
-        shifted_log_price = stk_data["log_price"].shift(period)
-        stk_data[f'{period}period_shifted_log_price'] = shifted_log_price
-        stk_data[f'{period}period_change_in_log_price'] = stk_data["log_price"] - shifted_log_price
-        stk_data[f'{period}period_percentage_change_in_log_price'] = (
-                stk_data[f'{period}period_change_in_log_price'] / shifted_log_price * 100
-        )
-
-    return stk_data
-
-
-def create_price_variables(stk_data, list_of_periods=range(1, 11)):
-    """
-    Create price change and related variables for a given DataFrame.
-
-    :param stk_data: DataFrame containing stock data.
-    :param list_of_periods: List of periods to calculate shifted prices.
-    :return: Modified DataFrame with price change variables.
-    """
-    for period in list_of_periods:
-        shifted_price = stk_data["Average"].shift(period)
-        stk_data[f'{period}period_shifted_price'] = shifted_price
-        stk_data[f'{period}period_change_in_price'] = stk_data["Average"] - shifted_price
-        stk_data[f'{period}period_percentage_change_in_price'] = (
-                stk_data[f'{period}period_change_in_price'] / shifted_price * 100
-        )
-        stk_data[f'sum_of_absolute_percentage_price_changes_over_{period}_periods'] = stk_data[
-            f'{period}period_percentage_change_in_price'].abs().rolling(window=period).sum()
-    return stk_data
-
-
-def create_volume_change_variables(stk_data, list_of_periods=range(1, 11)):
-    """
-    Create log volume and related variables for a given DataFrame.
-
-    :param stk_data: DataFrame containing stock data.
-    :param list_of_periods: List of periods to calculate shifted log volumes.
-    :return: Modified DataFrame with log volume variables.
-    """
-    log_volume = np.log(stk_data["Volume"])
-    stk_data["log_volume"] = log_volume
-    for period in list_of_periods:
-        shifted_log_volume = stk_data["log_volume"].shift(period)
-        stk_data[f'{period}period_shifted_log_volume'] = shifted_log_volume
-        stk_data[f'{period}period_change_in_log_volume'] = stk_data["log_volume"] - shifted_log_volume
-    return stk_data
-
-
-def generate_bollinger_bands(dataFrame, period=20):
-    """
-    Generate Bollinger Bands based on moving averages and standard deviations.
-
-    :param dataFrame: DataFrame containing stock data.
-    :param period: Period for calculating moving averages and standard deviations.
-    :return: DataFrame with Bollinger Bands columns added.
-    """
-    # Calculate the moving average and standard deviation over the last 'period' rows
-    dataFrame['MA_20'] = dataFrame['Average'].rolling(window=period).mean()
-    dataFrame['SD_20'] = dataFrame['Average'].rolling(window=period).std()
-
-    # Calculate the Bollinger Bands
-    dataFrame['UpperBB2SD'] = dataFrame['MA_20'] + 2 * dataFrame['SD_20']
-    dataFrame['LowerBB2SD'] = dataFrame['MA_20'] - 2 * dataFrame['SD_20']
-    dataFrame['UpperBB1SD'] = dataFrame['MA_20'] + dataFrame['SD_20']
-    dataFrame['LowerBB1SD'] = dataFrame['MA_20'] - dataFrame['SD_20']
-
-    return dataFrame
 
 
 def boolean_bollinger_band_location(minuteDataFrame):
