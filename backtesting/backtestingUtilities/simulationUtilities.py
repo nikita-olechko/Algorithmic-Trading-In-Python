@@ -120,7 +120,7 @@ def simulate_trading_on_strategy(stk_data, ticker, strategy_buy_or_sell_conditio
         if row.isna().any():
             continue
         # Get order based on strategy conditions
-        order = strategy_buy_or_sell_condition_function(stk_data[:index], ticker=ticker, current_index=index,
+        order = strategy_buy_or_sell_condition_function(stk_data[:index+1], ticker=ticker, current_index=index,
                                                         last_order_index=last_order_index)
 
         # If this is the first order, wait until first Buy order to establish the position
