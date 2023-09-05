@@ -1,8 +1,3 @@
-import pickle
-
-import numpy as np
-import pandas as pd
-
 from utilities.dataGenerationUtilities import create_price_variables, create_log_price_variables, \
     create_volume_change_variables, generate_bollinger_bands, boolean_bollinger_band_location
 from utilities.general_strategy_utilities import profit_taker, minutes_since_last_order
