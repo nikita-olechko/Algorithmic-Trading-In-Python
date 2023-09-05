@@ -7,9 +7,6 @@ from utilities.dataGenerationUtilities import create_price_variables, create_log
 from utilities.general_strategy_utilities import profit_taker, minutes_since_last_order
 
 
-
-
-
 def predict_based_on_model(barDataFrame, model_object):
     x_columns = list(barDataFrame.columns)
 
@@ -30,7 +27,7 @@ def predict_based_on_model(barDataFrame, model_object):
     return barDataFrame
 
 
-def generate_model_data(barDataFrame, model_object, Z_periods=120, periodicity=1):
+def generate_model_data(barDataFrame, model_object=None, Z_periods=120, periodicity=1):
     barDataFrame = create_log_price_variables(barDataFrame, list_of_periods=range(1, Z_periods, periodicity))
     barDataFrame = create_price_variables(barDataFrame, list_of_periods=range(1, Z_periods, periodicity))
     barDataFrame = create_volume_change_variables(barDataFrame, list_of_periods=range(1, Z_periods, periodicity))
