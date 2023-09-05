@@ -47,7 +47,7 @@ def model_file_path(symbol, barsize, duration, Z_periods, X_percentage, model_ty
 
     # Calculate the new directory path with offset
     current_directory = os.path.abspath(os.path.join(current_directory, "../" * directory_offset))
-    folder_path = os.path.join(current_directory, "models/classification_price_change")
+    folder_path = os.path.join(current_directory, "models/classification_price_change/model_objects")
     file_name = get_model_name(symbol, barsize, duration, Z_periods=Z_periods, X_percentage=X_percentage,
                                model_type=model_type)
     return os.path.join(folder_path, file_name)
