@@ -100,8 +100,13 @@ def create_volume_change_variables(stk_data, list_of_periods=range(1, 11)):
     stk_data["log_volume"] = log_volume
     for period in list_of_periods:
         shifted_log_volume = stk_data["log_volume"].shift(period)
+        shifted_volume = stk_data["Volume"].shift(period)
         stk_data[f'{period}period_shifted_log_volume'] = shifted_log_volume
         stk_data[f'{period}period_change_in_log_volume'] = stk_data["log_volume"] - shifted_log_volume
+        stk_data[f'{period}period_shifted_volume'] = shifted_volume
+        stk_data[f'{period}period_change_in_volume'] = stk_data["Volume"] - shifted_volume
+        stk_data[f'{period}period_percentage_change_in_volume'] = stk_data[f'{period}period_change_in_volume'] \
+                                                                  / shifted_volume * 100
     return stk_data
 
 
