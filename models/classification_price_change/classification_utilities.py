@@ -1,6 +1,5 @@
 import os
 import pickle
-from itertools import groupby, count
 
 
 def occurences_more_than_Z_periods_apart(dataframe, column_name='Actual', Z_periods=60):
@@ -31,19 +30,26 @@ def incorrect_detections_not_within_Z_periods_of_correct_detection(dataframe, Z_
     return incorrect_detections
 
 
-def incorrect_detection_within_allowable_error(results_dataframe, max_percent_change, Z_periods, X_percentage,
-                                               allowable_error):
-    # we need the predicted values
-    # we need the actual percentages
-    predicted_indices = list(results_dataframe[results_dataframe['Predicted'] == 1].index)
-    percent_changes_at_predicted_indices = results_dataframe.loc[predicted_indices, 'Percent Change']
-
-
 def create_classification_report_name(Z_periods=60, X_percentage=3, model_type='lm', allowable_error=""):
     """
     A function to return the classification report name. Must be called in the directory above model_performance.
     """
     return f'model_performance/classification_price_change_{model_type}_{Z_periods}_periods_{X_percentage}_percent_threshold_{allowable_error}_percent_error.csv'
+
+
+def get_model_name(symbol, barsize, duration, Z_periods=60, X_percentage=3, model_type='lm'):
+    return f'classification_price_change_{model_type}_{symbol}_{Z_periods}_periods_{X_percentage}_percent_change_{barsize.replace(" ", "")}_{duration.replace(" ", "")}.pkl'
+
+
+def model_file_path(symbol, barsize, duration, Z_periods, X_percentage, model_type='rf', directory_offset=1):
+    # Get the current working directory
+    current_directory = os.getcwd()
+
+    # Calculate the new directory path with offset
+    current_directory = os.path.abspath(os.path.join(current_directory, "../" * directory_offset))
+    folder_path = os.path.join(current_directory, "models/classification_price_change")
+    file_name = get_model_name(symbol, barsize, duration, Z_periods=Z_periods, X_percentage=X_percentage, model_type=model_type)
+    return os.path.join(folder_path, file_name)
 
 
 def model_exists(Z_periods=60, X_percentage=3, model_type='lm', allowable_error=""):
