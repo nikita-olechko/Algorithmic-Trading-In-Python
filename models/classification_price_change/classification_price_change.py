@@ -12,9 +12,10 @@ from sklearn.neural_network import MLPClassifier
 
 from backtesting.backtestingUtilities.simulationUtilities import retrieve_base_data
 from utilities.classification_utilities import create_classification_report_name, \
-    occurences_more_than_Z_periods_apart, incorrect_detections_not_within_Z_periods_of_correct_detection
+    occurences_more_than_Z_periods_apart, incorrect_detections_not_within_Z_periods_of_correct_detection, \
+    price_changes_after_incorrect_detections, detection_indices_by_correctness
 from utilities.__init__ import DATE_FORMAT
-from utilities.dataGenerationUtilities import create_volume_change_variables, create_price_variables, \
+from utilities.dataGenerationUtilities import create_volume_variables, create_price_variables, \
     create_log_price_variables, generate_bollinger_bands
 from utilities.generalUtilities import initialize_ib_connection, timer
 
@@ -60,7 +61,7 @@ def prepare_data_classification_model(ticker, barsize, duration, endDateTime='',
                                       very_large_data=very_large_data, try_errored_tickers=try_errored_tickers)
     stk_data = create_log_price_variables(stk_data, list_of_periods=range(1, Z_periods, periodicity))
     stk_data = create_price_variables(stk_data, list_of_periods=range(1, Z_periods, periodicity))
-    stk_data = create_volume_change_variables(stk_data, list_of_periods=range(1, Z_periods, periodicity))
+    stk_data = create_volume_variables(stk_data, list_of_periods=range(1, Z_periods, periodicity))
     stk_data = generate_bollinger_bands(stk_data)
     stk_data = boolean_bollinger_band_location(stk_data)
     # Y Variable
@@ -207,7 +208,7 @@ def create_classification_price_change_mlp_model(symbol, endDateTime='', save_mo
 
 def analyze_classification_model_performance(ticker, model_object, test_data, additional_columns_to_remove=None,
                                              Z_periods=60,
-                                             X_percentage=3, model_type='lm', allowable_error=0):
+                                             X_percentage=3, model_type='lm', allowable_error=0, model_data_range=None):
     """
     Analyze the performance of a predictive model.
 
@@ -254,39 +255,17 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
         ((data['Max_Price_in_Next_Z_Periods'] - data['Average']) / data[
             'Average']) * 100
 
-    strictly_incorrect_detection_indices = incorrect_detections_not_within_Z_periods_of_correct_detection(results,
-                                                                                                          Z_periods)
+    detections_within_error, detections_outside_error \
+        = detection_indices_by_correctness(results, data, Z_periods, X_percentage, allowable_error)
 
-    detections_within_error = []
-    detections_outside_error = []
-
-    for index in strictly_incorrect_detection_indices:
-        max_percentage_price_change = data[f'maximum_percentage_price_change_over_next_{Z_periods}'][index]
-        if max_percentage_price_change >= (X_percentage * allowable_error / 100):
-            detections_within_error.append(index)
-        else:
-            detections_outside_error.append(index)
+    price_change_percentage_after_Z_periods_incorrect_detection \
+        = price_changes_after_incorrect_detections(results, Z_periods, X_percentage, data, allowable_error,
+                                                   detections_within_error, detections_outside_error)
 
     def correctly_predicted_change(actual, predicted):
         if actual == 1:
             return predicted
         return np.nan
-
-    detections_outside_error_copy = detections_outside_error.copy()
-
-    indices_after_detection_outside_error = [index + Z_periods for index in detections_outside_error]
-    if indices_after_detection_outside_error[-1] > len(data):
-        indices_after_detection_outside_error = indices_after_detection_outside_error[:-1]
-        detections_outside_error_copy = detections_outside_error[:-1]
-
-    price_at_detection_outside_error = list(data['Average'][detections_outside_error_copy])
-    price_at_detection_after_Z_periods = list(data['Average'][indices_after_detection_outside_error])
-
-
-    price_change_percentage_after_Z_periods_incorrect_detection = [(price_at_detection_after_Z_periods[index] -
-                                                        price_at_detection_outside_error[index]) / \
-                                                        price_at_detection_outside_error[index] * 100
-                                                        for index in range(len(price_at_detection_outside_error))]
 
     results['Correctly_Predicted_Change'] = results.apply(
         lambda x: correctly_predicted_change(x['Actual'], x['Predicted']),
@@ -339,6 +318,7 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
                            price_change_percentage_after_Z_periods_incorrect_detection),
                        "Grouped_Standard_Deviation_Incorrect_Detection_Price_Change": np.std(
                            price_change_percentage_after_Z_periods_incorrect_detection),
+                       "Model_Data_Range": f"{model_data_range}",
                        "Test_Data_Range": f"{list(data['Date'])[0]} to {list(data['Date'])[-1]}",
                        "Above_2SD_Correctly_Predicted": above_two_sd_series.sum(),
                        "Above_1SD_Correctly_Predicted": above_one_sd_series.sum(),

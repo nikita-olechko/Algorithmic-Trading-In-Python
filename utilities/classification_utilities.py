@@ -83,3 +83,43 @@ def get_model_object(symbol='NKLA', model_barsize='1 min', model_duration='12 M'
 
     model_object = pickle.load(open(model_file, 'rb'))
     return model_object
+
+
+def detection_indices_by_correctness(results, data, Z_periods, X_percentage, allowable_error):
+    strictly_incorrect_detection_indices = incorrect_detections_not_within_Z_periods_of_correct_detection(results,
+                                                                                                          Z_periods)
+
+    detections_within_error = []
+    detections_outside_error = []
+
+    for index in strictly_incorrect_detection_indices:
+        max_percentage_price_change = data[f'maximum_percentage_price_change_over_next_{Z_periods}'][index]
+        if max_percentage_price_change >= (X_percentage * allowable_error / 100):
+            detections_within_error.append(index)
+        else:
+            detections_outside_error.append(index)
+
+    return detections_within_error, detections_outside_error
+
+
+def price_changes_after_incorrect_detections(results, Z_periods, X_percentage, data, allowable_error,
+                                             detections_within_error=None, detections_outside_error=None):
+    if detections_within_error is None or detections_outside_error is None:
+        detections_within_error, detections_outside_error = detection_indices_by_correctness(results, data, Z_periods,
+                                                                                             X_percentage, allowable_error)
+
+    indices_after_detection_outside_error = [index + Z_periods for index in detections_outside_error]
+    if indices_after_detection_outside_error[-1] > len(data):
+        indices_after_detection_outside_error = indices_after_detection_outside_error[:-1]
+        detections_outside_error = detections_outside_error[:-1]
+
+    price_at_detection_outside_error = list(data['Average'][detections_outside_error])
+    price_at_detection_after_Z_periods = list(data['Average'][indices_after_detection_outside_error])
+
+    price_change_percentage_after_Z_periods_incorrect_detection = [(price_at_detection_after_Z_periods[index] -
+                                                                    price_at_detection_outside_error[index]) / \
+                                                                   price_at_detection_outside_error[index] * 100
+                                                                   for index in
+                                                                   range(len(price_at_detection_outside_error))]
+
+    return price_change_percentage_after_Z_periods_incorrect_detection
