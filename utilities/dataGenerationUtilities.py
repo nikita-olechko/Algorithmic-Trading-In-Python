@@ -76,6 +76,7 @@ def create_price_variables(stk_data, list_of_periods=range(1, 11)):
     :return: Modified DataFrame with price change variables.
     """
     for period in list_of_periods:
+        period += 1
         shifted_price = stk_data["Average"].shift(period)
         stk_data[f'{period}period_shifted_price'] = shifted_price
         stk_data[f'{period}period_change_in_price'] = stk_data["Average"] - shifted_price
@@ -87,7 +88,7 @@ def create_price_variables(stk_data, list_of_periods=range(1, 11)):
     return stk_data
 
 
-def create_volume_change_variables(stk_data, list_of_periods=range(1, 11)):
+def create_volume_variables(stk_data, list_of_periods=range(1, 11)):
     """
     Create log volume and related variables for a given DataFrame.
 
@@ -95,18 +96,16 @@ def create_volume_change_variables(stk_data, list_of_periods=range(1, 11)):
     :param list_of_periods: List of periods to calculate shifted log volumes.
     :return: Modified DataFrame with log volume variables.
     """
-    log_volume = np.log(stk_data["Volume"])
-    log_volume[log_volume == -np.inf] = 0
-    stk_data["log_volume"] = log_volume
     for period in list_of_periods:
-        shifted_log_volume = stk_data["log_volume"].shift(period)
+        period += 1
         shifted_volume = stk_data["Volume"].shift(period)
-        stk_data[f'{period}period_shifted_log_volume'] = shifted_log_volume
-        stk_data[f'{period}period_change_in_log_volume'] = stk_data["log_volume"] - shifted_log_volume
         stk_data[f'{period}period_shifted_volume'] = shifted_volume
-        stk_data[f'{period}period_change_in_volume'] = stk_data["Volume"] - shifted_volume
-        stk_data[f'{period}period_percentage_change_in_volume'] = stk_data[f'{period}period_change_in_volume'] \
-                                                                  / shifted_volume * 100
+        stk_data[f'{period}period_change_in_volume'] = stk_data["Average"] - shifted_volume
+        stk_data[f'{period}period_percentage_change_in_volume'] = (
+                stk_data[f'{period}period_change_in_volume'] / shifted_volume * 100
+        )
+        stk_data[f'sum_of_absolute_percentage_volume_changes_over_{period}_periods'] = stk_data[
+            f'{period}period_percentage_change_in_volume'].abs().rolling(window=period).sum()
     return stk_data
 
 
