@@ -55,8 +55,8 @@ def run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percent
                                                                  X_percentage=X_percentage,
                                                                  allowable_error=allowable_error,
                                                                  model_data_range=
-                                                                 f"{list(model_data['Date'])[0]} to "
-                                                                 f"{list(model_data['Date'])[-1]}")
+                                                                 f"{list(model_data['Date'])[0].split(' ')[0]} to "
+                                                                 f"{list(model_data['Date'])[-1].split(' ')[0]}")
                     print(f"Finished Ticker: {ticker}, Periods: {Z_periods}, Percentage: {X_percentage}")
                 except Exception as e:
                     print(f"Error with {ticker}: {e}")

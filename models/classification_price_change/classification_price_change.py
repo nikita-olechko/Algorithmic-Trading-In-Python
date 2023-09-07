@@ -318,7 +318,7 @@ def analyze_classification_model_performance(ticker, model_object, test_data, ad
                        "Grouped_Standard_Deviation_Incorrect_Detection_Price_Change": np.std(
                            price_change_percentage_after_Z_periods_incorrect_detection),
                        "Model_Data_Range": f"{model_data_range}",
-                       "Test_Data_Range": f"{list(data['Date'])[0]} to {list(data['Date'])[-1]}",
+                       "Test_Data_Range": f"{list(data['Date'])[0].split(' ')[0]} to {list(data['Date'])[-1].split(' ')[0]}",
                        "Above_2SD_Correctly_Predicted": above_two_sd_series.sum(),
                        "Above_1SD_Correctly_Predicted": above_one_sd_series.sum(),
                        "Below_2SD_Correctly_Predicted": below_two_sd_series.sum(),
