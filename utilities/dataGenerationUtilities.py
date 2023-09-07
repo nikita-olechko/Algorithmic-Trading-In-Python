@@ -95,6 +95,7 @@ def create_volume_variables(stk_data, list_of_periods=range(1, 11)):
     :param list_of_periods: List of periods to calculate shifted log volumes.
     :return: Modified DataFrame with log volume variables.
     """
+    stk_data["Volume"].replace(0, 1, inplace=True)
     for period in list_of_periods:
         shifted_volume = stk_data["Volume"].shift(period)
         stk_data[f'{period}period_shifted_volume'] = shifted_volume
