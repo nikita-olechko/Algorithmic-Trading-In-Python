@@ -112,7 +112,7 @@ def create_classification_price_change_logistic_regression_model(symbol, endDate
 
     # Create and train the logistic regression model
     logistic_reg = LogisticRegression()
-    print("Training Logistic Regression Model")
+    print("Training Logistic Regression Model: ", symbol)
     logistic_reg.fit(X_train, y_train)
 
     if save_model:
@@ -151,7 +151,7 @@ def create_classification_price_change_random_forest_model(symbol, data, endDate
 
     # Create and train the Random Forest classification model
     random_forest = RandomForestClassifier()
-    print("Training Random Forest Model")
+    print("Training Random Forest Model: ", symbol)
     random_forest.fit(X_train, y_train)
 
     if save_model:
@@ -194,7 +194,7 @@ def create_classification_price_change_mlp_model(symbol, endDateTime='', save_mo
     }
 
     grid_search = GridSearchCV(mlp_classifier, param_grid, cv=3, scoring='accuracy')
-    print("Training MLP Model")
+    print("Training MLP Model: ", symbol)
     grid_search.fit(x_train, y_train)
 
     best_mlp_classifier = grid_search.best_estimator_
