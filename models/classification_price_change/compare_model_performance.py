@@ -14,6 +14,9 @@ warning_categories_to_ignore = [PerformanceWarning, RuntimeWarning]
 def run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, list_of_tickers,
                                             models_to_run=('lm', 'rf', 'mlp'), barsize="1 min", model_duration="12 M",
                                             test_duration="2 M", allowable_error=0, periodicity=1):
+    """
+    Run a series of classification models on a list of tickers, Z periods, and X percentages.
+    """
     for Z_periods in list_of_Z_periods:
         for X_percentage in list_of_X_percentages:
             for ticker in list_of_tickers:

@@ -29,22 +29,6 @@ def average_bars_by_minute(barDataFrame, minuteDataFrame, non_numeric_columns=No
     return minuteDataFrame
 
 
-def modify_func_from_last_row_to_all_rows(func):
-    # Get the source code of the function
-    source_code = inspect.getsource(func)
-
-    # Replace the code using regular expressions
-    modified_code = re.sub(r"barDataFrame\.loc\[barDataFrame\.index\[-1\], '(.*?)'\]",
-                           r"barDataFrame['\1']",
-                           source_code)
-
-    # Define a new (local) function using the modified code
-    exec(modified_code, globals())
-
-    # Return the newly defined function
-    return globals()[func.__name__]
-
-
 def create_log_price_variables(stk_data, list_of_periods=range(1, 11)):
     """
     Create log price and related variables for a given DataFrame.
