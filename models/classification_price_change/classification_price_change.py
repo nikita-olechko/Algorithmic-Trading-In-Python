@@ -53,10 +53,9 @@ def prepare_data_classification_model(ticker, barsize, duration, endDateTime='',
     """
     Prepare training data for machine learning models.
     """
-    ib = initialize_ib_connection()
     stk_data = data
     if data is None:
-        stk_data = retrieve_base_data(ib, ticker, barsize, duration, directory_offset=2,
+        stk_data = retrieve_base_data(ticker, barsize, duration, directory_offset=2,
                                       endDateTime=endDateTime, months_offset=months_offset,
                                       very_large_data=very_large_data, try_errored_tickers=try_errored_tickers)
     stk_data = days_crossover(stk_data, Z_periods)

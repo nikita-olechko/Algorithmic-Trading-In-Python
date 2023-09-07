@@ -65,8 +65,6 @@ def run_strategy_on_list_of_tickers(strategy, strategy_buy_or_sell_condition_fun
         :param args: Additional positional arguments passed to strategy functions.
         :param kwargs: Additional keyword arguments passed to strategy functions.
     """
-    ib = initialize_ib_connection()
-
     if list_of_tickers is None:
         list_of_tickers = pd.read_csv("../backtesting/nyse-listed.csv")['ACT Symbol']
         if ticker_limit is not None:
@@ -93,7 +91,7 @@ def run_strategy_on_list_of_tickers(strategy, strategy_buy_or_sell_condition_fun
 
     for ticker in list_of_tickers:
         gc.collect()
-        stk_data = retrieve_base_data(ib, ticker, barsize=barsize, duration=duration, directory_offset=directory_offset,
+        stk_data = retrieve_base_data(ticker, barsize=barsize, duration=duration, directory_offset=directory_offset,
                                       what_to_show=what_to_show, months_offset=months_offset,
                                       very_large_data=very_large_data)
 
@@ -217,7 +215,7 @@ def create_summary_data(stk_data, ticker, summary_df=None):
     return new_summary
 
 
-def retrieve_base_data(ib, ticker, barsize="1 day", duration="3 Y", what_to_show="TRADES", directory_offset=0,
+def retrieve_base_data(ticker, barsize="1 day", duration="3 Y", what_to_show="TRADES", directory_offset=0,
                        endDateTime='', very_large_data=False, months_offset=0, try_errored_tickers=False):
     if not try_errored_tickers:
         csv_file_path = "../backtesting/data/ErroredTickers/ErroredTickers.csv"
@@ -230,12 +228,12 @@ def retrieve_base_data(ib, ticker, barsize="1 day", duration="3 Y", what_to_show
             erred_tickers = pd.DataFrame(columns=['Ticker'])
 
     if very_large_data:
-        stk_data = get_months_of_historical_data(ib, ticker, months=int(duration.split(" ")[0]), barsize=barsize,
+        stk_data = get_months_of_historical_data(ticker, months=int(duration.split(" ")[0]), barsize=barsize,
                                                  what_to_show=what_to_show,
                                                  directory_offset=directory_offset, months_offset=months_offset
                                                  )
     else:
-        stk_data = get_stock_data(ib, ticker, barsize=barsize, duration=duration, what_to_show=what_to_show,
+        stk_data = get_stock_data(ticker, barsize=barsize, duration=duration, what_to_show=what_to_show,
                                   directory_offset=directory_offset, endDateTime=endDateTime)
     # TODO FIX: does not work atm as cannot find the file
     # if stk_data is None:
@@ -250,8 +248,9 @@ def retrieve_base_data(ib, ticker, barsize="1 day", duration="3 Y", what_to_show
     return stk_data
 
 
-def get_stock_data(ib, ticker, barsize='1 min', duration='1 M', what_to_show='TRADES', directory_offset=0,
+def get_stock_data(ticker, barsize='1 min', duration='1 M', what_to_show='TRADES', directory_offset=0,
                    endDateTime=''):
+
     contract = Contract()
     contract.symbol = ticker
     contract.secType = 'STK'
@@ -277,6 +276,7 @@ def get_stock_data(ib, ticker, barsize='1 min', duration='1 M', what_to_show='TR
             print("An error occurred retrieving the file:", str(e))
             stk_data = None
     else:
+        ib = initialize_ib_connection()
         stk_data = None
         try:
             bars = ib.reqHistoricalData(

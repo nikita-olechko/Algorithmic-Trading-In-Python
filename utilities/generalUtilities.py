@@ -118,7 +118,7 @@ def ibkr_query_time_days(day_offset=0):
     return end_date.strftime("%Y%m%d %H:%M:%S")
 
 
-def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_to_show='TRADES',
+def get_months_of_historical_data(ticker, months=12, barsize='1 Min', what_to_show='TRADES',
                                   directory_offset=0, months_offset=0):
     """
     Retrieve historical data for a given number of months.
@@ -132,6 +132,7 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
     :param months_offset: Offset for adjusting the query start date.
     :return: Pandas DataFrame containing historical data.
     """
+
     duration = '1 M'
     contract = Contract()
     contract.symbol = ticker
@@ -159,6 +160,7 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
             print("An error occurred retrieving the file:", str(e))
             stk_data = None
     else:
+        ib = initialize_ib_connection()
         stk_data = pd.DataFrame(columns=['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount'])
         for month in range(months):
             endDateTime = ibkr_query_time_months(month + months_offset)
@@ -196,7 +198,7 @@ def get_months_of_historical_data(ib, ticker, months=12, barsize='1 Min', what_t
     return stk_data
 
 
-def get_days_of_historical_data(ib, ticker, days=1, barsize='1 secs', what_to_show='TRADES',
+def get_days_of_historical_data(ticker, days=1, barsize='1 secs', what_to_show='TRADES',
                                 directory_offset=0):
     """
     Retrieve historical data for a given number of days.
@@ -235,6 +237,8 @@ def get_days_of_historical_data(ib, ticker, days=1, barsize='1 secs', what_to_sh
             print("An error occurred retrieving the file:", str(e))
             stk_data = None
     else:
+        ib = initialize_ib_connection()
+
         stk_data = pd.DataFrame(columns=['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Average', 'Barcount'])
         for day in range(days):
             endDateTime = ibkr_query_time_days(day)

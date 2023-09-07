@@ -114,10 +114,9 @@ def prepare_training_data(data, barsize, duration, endDateTime):
     :param endDateTime: End date and time for the data.
     :return: Processed data, feature columns, and target column.
     """
-    ib = initialize_ib_connection()
     stk_data = data
     if data is None:
-        stk_data = get_stock_data(ib, "XOM", barsize, duration, directory_offset=2, endDateTime=endDateTime)
+        stk_data = get_stock_data("XOM", barsize, duration, directory_offset=2, endDateTime=endDateTime)
     stk_data = create_log_price_variables(stk_data)
     stk_data['NextPeriodChangeInLogPrice'] = stk_data['log_price'].shift(-1) - stk_data['log_price']
     stk_data = create_volume_change_variables(stk_data)

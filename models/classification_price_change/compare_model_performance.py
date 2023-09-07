@@ -72,7 +72,7 @@ def main():
     list_of_tickers = ['XOM', 'TSLA', 'MSFT', 'AMZN']
     extra_tickers = ["TSLA", "NIO", "PLTR", "ROKU", "ZM", "MRNA", "SPCE", "NKLA", "ZI", "SNOW",
                      "PTON", "GME", "AMC", "PLUG"] + ['NKLA', 'SPCE']
-    complete_list_of_tickers = list_of_tickers + extra_tickers
+    complete_list_of_tickers = extra_tickers + list_of_tickers
     models_to_run = ['rf']
     allowable_error_percentage = 75
     periodicity = 1

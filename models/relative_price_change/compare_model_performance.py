@@ -10,7 +10,6 @@ from models.relative_price_change.relative_price_change import create_relative_p
 from utilities.generalUtilities import initialize_ib_connection, get_months_of_historical_data, ibkr_query_time_months
 
 for ticker in ["XOM"]:
-    ib = initialize_ib_connection()
     barsize = "5 mins"
     test_duration = "2 M"
     months = 12
@@ -25,7 +24,7 @@ for ticker in ["XOM"]:
     # model_data = boolean_bollinger_band_location(model_data)
     # model_data = model_data.dropna()
 
-    test_data = get_stock_data(ib, ticker, barsize=barsize, duration=test_duration, directory_offset=2)
+    test_data = get_stock_data(ticker, barsize=barsize, duration=test_duration, directory_offset=2)
     test_data = create_log_price_variables(test_data)
     test_data['NextPeriodChangeInLogPrice'] = test_data['log_price'].shift(-1) - test_data['log_price']
     test_data = create_volume_change_variables(test_data)
