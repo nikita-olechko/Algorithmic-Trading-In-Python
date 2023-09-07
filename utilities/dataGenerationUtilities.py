@@ -29,6 +29,14 @@ def average_bars_by_minute(barDataFrame, minuteDataFrame, non_numeric_columns=No
     return minuteDataFrame
 
 
+def days_crossover(stk_data, Z_periods):
+    stk_data['CurrentDay'] = stk_data['Date'].str.split(' ').str[0]
+    stk_data['Day_Z_periods_ago'] = stk_data['Date'].shift(Z_periods).str.split(' ').str[0]
+    stk_data['DaysCrossed'] = np.where(stk_data['CurrentDay'] != stk_data['Day_Z_periods_ago'], 1, 0)
+    stk_data.drop(columns=['CurrentDay', 'Day_Z_periods_ago'], inplace=True)
+    return stk_data
+
+
 def create_log_price_variables(stk_data, list_of_periods=range(1, 11)):
     """
     Create log price and related variables for a given DataFrame.

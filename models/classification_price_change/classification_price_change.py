@@ -16,7 +16,7 @@ from utilities.classification_utilities import create_classification_report_name
     price_changes_after_incorrect_detections, detection_indices_by_correctness
 from utilities.__init__ import DATE_FORMAT
 from utilities.dataGenerationUtilities import create_volume_variables, create_price_variables, \
-    create_log_price_variables, generate_bollinger_bands
+    create_log_price_variables, generate_bollinger_bands, days_crossover
 from utilities.generalUtilities import initialize_ib_connection, timer
 
 
@@ -59,6 +59,7 @@ def prepare_data_classification_model(ticker, barsize, duration, endDateTime='',
         stk_data = retrieve_base_data(ib, ticker, barsize, duration, directory_offset=2,
                                       endDateTime=endDateTime, months_offset=months_offset,
                                       very_large_data=very_large_data, try_errored_tickers=try_errored_tickers)
+    stk_data = days_crossover(stk_data, Z_periods)
     stk_data = create_log_price_variables(stk_data, list_of_periods=range(1, Z_periods, periodicity))
     stk_data = create_price_variables(stk_data, list_of_periods=range(1, Z_periods, periodicity))
     stk_data = create_volume_variables(stk_data, list_of_periods=range(1, Z_periods, periodicity))
