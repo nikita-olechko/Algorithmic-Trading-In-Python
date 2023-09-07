@@ -67,9 +67,10 @@ list_of_Z_periods = [120, 180]
 list_of_X_percentages = [1.5, 1]
 list_of_tickers = ['XOM', 'TSLA', 'MSFT', 'AMZN']
 extra_tickers = ["TSLA", "NIO", "PLTR", "ROKU", "ZM", "MRNA", "SPCE", "NKLA", "ZI", "SNOW",
-                 "PTON", "GME", "AMC", "PLUG"] + ['NKLA', 'SPCE', 'PTON']
+                 "PTON", "GME", "AMC", "PLUG"] + ['NKLA', 'SPCE']
 complete_list_of_tickers = list_of_tickers + extra_tickers
-models_to_run = ['rf']
+# models_to_run = ['rf']
+models_to_run = ['lm']
 allowable_error_percentage = 75
 periodicity = 1
 model_duration = "12 M"
@@ -79,7 +80,7 @@ barsize = "1 min"
 # Filter out the specified warning categories
 for warning_category in warning_categories_to_ignore:
     warnings.filterwarnings("ignore", category=warning_category)
-run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, complete_list_of_tickers,
+run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, ['GME'],
                                         models_to_run, barsize=barsize,
                                         model_duration=model_duration, test_duration=test_duration,
                                         periodicity=periodicity,

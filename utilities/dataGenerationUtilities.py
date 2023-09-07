@@ -76,7 +76,6 @@ def create_price_variables(stk_data, list_of_periods=range(1, 11)):
     :return: Modified DataFrame with price change variables.
     """
     for period in list_of_periods:
-        period += 1
         shifted_price = stk_data["Average"].shift(period)
         stk_data[f'{period}period_shifted_price'] = shifted_price
         stk_data[f'{period}period_change_in_price'] = stk_data["Average"] - shifted_price
@@ -97,7 +96,6 @@ def create_volume_variables(stk_data, list_of_periods=range(1, 11)):
     :return: Modified DataFrame with log volume variables.
     """
     for period in list_of_periods:
-        period += 1
         shifted_volume = stk_data["Volume"].shift(period)
         stk_data[f'{period}period_shifted_volume'] = shifted_volume
         stk_data[f'{period}period_change_in_volume'] = stk_data["Volume"] - shifted_volume

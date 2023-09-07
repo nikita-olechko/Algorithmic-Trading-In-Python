@@ -26,7 +26,7 @@ correct_result = pd.DataFrame(correct_result)
 
 class TestCreatevolumeVariables(TestCase):
     def test_create_volume_variables(self):
-        result_df = pd.DataFrame(create_volume_variables(test_dataframe, range(2)))
+        result_df = pd.DataFrame(create_volume_variables(test_dataframe, range(1, 3)))
 
         for key in list(correct_result.keys()):
             np.testing.assert_allclose(result_df[key].values, correct_result[key].values, atol=1e-6)
