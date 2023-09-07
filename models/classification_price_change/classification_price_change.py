@@ -78,7 +78,6 @@ def prepare_data_classification_model(ticker, barsize, duration, endDateTime='',
         x_columns.remove(column)
 
     data = stk_data.dropna()
-    data = data[~data.isin([np.inf, -np.inf]).any(axis=1)]
 
     return data, x_columns, y_column
 
