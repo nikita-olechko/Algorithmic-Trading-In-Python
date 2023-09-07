@@ -83,8 +83,8 @@ def create_price_variables(stk_data, list_of_periods=range(1, 11)):
         stk_data[f'{period}period_percentage_change_in_price'] = (
                 stk_data[f'{period}period_change_in_price'] / shifted_price * 100
         )
-        stk_data[f'sum_of_absolute_percentage_price_changes_over_{period}_periods'] = stk_data[
-            f'{period}period_percentage_change_in_price'].abs().rolling(window=period).sum()
+        stk_data[f'sum_of_absolute_percentage_price_changes_over_last_{period}_periods'] = stk_data[
+            f'1period_percentage_change_in_price'].abs().rolling(window=period).sum()
     return stk_data
 
 
@@ -100,12 +100,12 @@ def create_volume_variables(stk_data, list_of_periods=range(1, 11)):
         period += 1
         shifted_volume = stk_data["Volume"].shift(period)
         stk_data[f'{period}period_shifted_volume'] = shifted_volume
-        stk_data[f'{period}period_change_in_volume'] = stk_data["Average"] - shifted_volume
+        stk_data[f'{period}period_change_in_volume'] = stk_data["Volume"] - shifted_volume
         stk_data[f'{period}period_percentage_change_in_volume'] = (
                 stk_data[f'{period}period_change_in_volume'] / shifted_volume * 100
         )
-        stk_data[f'sum_of_absolute_percentage_volume_changes_over_{period}_periods'] = stk_data[
-            f'{period}period_percentage_change_in_volume'].abs().rolling(window=period).sum()
+        stk_data[f'sum_of_absolute_percentage_volume_changes_over_last_{period}_periods'] = stk_data[
+            f'1period_percentage_change_in_volume'].abs().rolling(window=period).sum()
     return stk_data
 
 
