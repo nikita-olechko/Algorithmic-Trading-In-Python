@@ -3,6 +3,14 @@ from utilities.dataGenerationUtilities import create_price_variables, create_log
     create_volume_variables
 from utilities.general_strategy_utilities import profit_taker, minutes_since_last_order, stop_loss
 from utilities.model_strategy_utilities import predict_based_on_model
+from pandas.errors import PerformanceWarning
+import warnings
+
+warning_categories_to_ignore = [PerformanceWarning, RuntimeWarning]
+
+# Filter out the specified warning categories
+for warning_category in warning_categories_to_ignore:
+    warnings.filterwarnings("ignore", category=warning_category)
 
 
 def generate_model_data(barDataFrame, model_object=None, Z_periods=120, periodicity=1):
