@@ -9,7 +9,7 @@ barsize = "1 min"
 duration = "3 M"
 model_barsize = '1 min'
 model_duration = '12 M'
-Z_periods = 120
+Z_periods = 180
 X_percentage = 1.5
 
 for symbol in ['NKLA', 'SPCE', 'PTON', 'AMC', 'PLUG']:
