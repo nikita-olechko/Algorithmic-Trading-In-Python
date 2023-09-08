@@ -72,6 +72,7 @@ def main():
     list_of_tickers = ['XOM', 'TSLA', 'MSFT', 'AMZN']
     extra_tickers = ["TSLA", "NIO", "PLTR", "ROKU", "ZM", "MRNA", "SPCE", "NKLA", "ZI", "SNOW",
                      "PTON", "GME", "AMC", "PLUG", 'SPCE']
+    cryto_test_list = ['BTC', 'ETH', 'LTC', 'XRP', 'BCH', 'LINK', 'ADA', 'XLM']
     complete_list_of_tickers = extra_tickers + list_of_tickers
     models_to_run = ['rf']
     allowable_error_percentage = 75
@@ -83,7 +84,7 @@ def main():
     # Filter out the specified warning categories
     for warning_category in warning_categories_to_ignore:
         warnings.filterwarnings("ignore", category=warning_category)
-    run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, complete_list_of_tickers,
+    run_classification_model_accuracy_tests(list_of_Z_periods, list_of_X_percentages, cryto_test_list,
                                             models_to_run, barsize=barsize,
                                             model_duration=model_duration, test_duration=test_duration,
                                             periodicity=periodicity,

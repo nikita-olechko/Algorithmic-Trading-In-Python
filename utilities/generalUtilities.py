@@ -181,7 +181,7 @@ def get_months_of_historical_data(ticker, months=12, barsize='1 Min', what_to_sh
                 print(f"Month {month+1} of {months} complete.")
             except Exception as e:
                 print("An error occurred:", str(e))
-                print(f"Month {month+1} of {months} skipped.")
+                return None
         try:
             stk_data = stk_data.drop_duplicates()
             stk_data = stk_data.sort_values(by=['Date'])
@@ -259,7 +259,7 @@ def get_days_of_historical_data(ticker, days=1, barsize='1 secs', what_to_show='
                 print(f"Day {day} of {days} complete.")
             except Exception as e:
                 print("An error occurred:", str(e))
-                print(f"Day {day} of {days} skipped.")
+                return None
         stk_data = stk_data.drop_duplicates()
         stk_data = stk_data.sort_values(by=['Date'])
         stk_data["Orders"] = 0
