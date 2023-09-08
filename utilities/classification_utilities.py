@@ -107,7 +107,8 @@ def price_changes_after_incorrect_detections(results, Z_periods, X_percentage, d
     if detections_within_error is None or detections_outside_error is None:
         detections_within_error, detections_outside_error = detection_indices_by_correctness(results, data, Z_periods,
                                                                                              X_percentage, allowable_error)
-
+    if len(detections_outside_error) == 0:
+        return []
     indices_after_detection_outside_error = [index + Z_periods for index in detections_outside_error]
     if indices_after_detection_outside_error[-1] > len(data):
         indices_after_detection_outside_error = indices_after_detection_outside_error[:-1]
