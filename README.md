@@ -22,7 +22,7 @@ Risk Awareness: Users must understand the risks associated with algorithmic trad
 
 # Features
 
-- Connects to Interactive Brokers API for live trading
+- Connects to Interactive Brokers API for live trading and historical data
 - Supports customizable strategies
 - Built with a modular design for adding more order types and quantities
 - Supports limit and stop-loss orders as well as market orders
