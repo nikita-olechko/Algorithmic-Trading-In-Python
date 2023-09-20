@@ -57,7 +57,7 @@ https://youtu.be/3PZ054bn8Jw
 Update the Bot instantiation in of RunTradingBot.py to reflect your desired trading symbol, quantity, and strategy.
 Navigate into the liveTrading directory and run the Python script:
 
-    python RunTradingBot.py
+    python liveTrading\\RunTradingBot.py
 
 There is also a batch file template to run the bot automatically on a daily basis.
 
