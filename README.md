@@ -1,5 +1,7 @@
 # Algorithmic Trading In Python
 
+This project is not being updated or monitored anymore. Instead, check out Tradable [tradable.live ](https://www.tradable.live/)
+
 This project allows users to build, test, and trade custom algorithmic trading strategies based on any parameters. It features a Live Trading bot with real-time data connection, a system to backtest your strategy on historical market data, and a basic framework for building and testing predictive models on market data.
 
 As a demonstrative example, the bot is set to use a sample strategy based on the 10-period Simple Moving Average (SMA). 
